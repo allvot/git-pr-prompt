@@ -1,4 +1,4 @@
-# gauge
+# Gauge
 
 *An instrument panel for your shell — read the repo and its pull request without
 looking, like glancing at a dial.*
@@ -50,7 +50,7 @@ right out of the box either way, with no tofu boxes.
 
 | | `nerdfont` | `minimal` (fallback) | `emoji` | `github` |
 |---|---|---|---|---|
-| PR open |  | `⊙` | 🔀 | 🟢 |
+| PR open |  | `⊙` | 🔀 | 🟢 |
 | draft |  | `◌` | 🚧 | ⚪ |
 | merged |  | `⊕` | 🎉 | 🟣 |
 | closed unmerged |  | `⊘` | 🚫 | 🔴 |
@@ -222,7 +222,7 @@ use `^L`.
 
   ```
     gauge  preset: nerdfont (auto — Nerd Font detected)
-    ~/repo │  feature/x │   2 │  
+    ~/repo │  feature/x │   2 │
 
     Pull request
        open                          pr_open           U+F407
