@@ -31,6 +31,29 @@ _zgp_usr1() {
   zle && zle reset-prompt
 }
 
+# Who-and-where prefix, including its trailing space — empty when it would only
+# be restating the obvious.
+#
+# Your own name on your own laptop is noise: it never changes, and it pushes the
+# useful part of the line right. It IS information in two cases, so `auto` shows
+# it exactly then — over SSH (which box am I on?) and as root (am I about to do
+# damage?). Decided once at setup: neither EUID nor SSH_* can change inside a
+# running shell.
+_zgp_user_segment() {
+  local remote="" who='%n'
+  [[ -n ${SSH_CONNECTION-}${SSH_TTY-} ]] && { remote=1; who='%n@%m' }
+
+  case $ZGP_SHOW_USER in
+    0) return ;;
+    1) ;;
+    *) [[ -n $remote ]] || (( EUID == 0 )) || return ;;
+  esac
+
+  local key=user
+  (( EUID == 0 )) && key=user_root
+  print -r -- "$(_zgp_color $key "$who") "
+}
+
 _zgp_setup() {
   setopt prompt_subst
 
@@ -47,7 +70,7 @@ _zgp_setup() {
   fi
 
   if (( ZGP_SET_PROMPT )); then
-    PROMPT="$(_zgp_color user '%n') $(_zgp_color path '%~')"
+    PROMPT="$(_zgp_user_segment)$(_zgp_color path '%~')"
     PROMPT+='${ZGP_GIT_INFO}'
 
     # Status on one line, the cursor on the next. Keeps the input at a fixed

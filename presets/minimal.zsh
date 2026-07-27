@@ -21,6 +21,7 @@ _zgp_fill ZGP_SYMBOLS \
 
 _zgp_fill ZGP_COLORS \
   user             green    \
+  user_root        red      \
   path             blue     \
   branch           magenta  \
   flags            yellow   \

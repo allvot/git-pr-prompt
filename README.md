@@ -9,13 +9,20 @@ background job, cached on disk, and painted into the prompt the moment it
 arrives (the prompt redraws itself via `SIGUSR1`).
 
 ```
-alvaro ~/codebase/underwriting (PRE-1470 *+? ↑2 ≡1) ⊙ ✓
-❯      └─ path            └─ branch └─ local state  └─ PR open, approved
+~/codebase/underwriting (PRE-1470 *+? ↑2 ≡1) ⊙ ✓
+❯ git commit --amend
 ```
 
-Status goes on one line and the cursor on the next, so your input always starts
-at the same column however deep the path or long the branch name. Set
-`ZGP_PROMPT_NEWLINE=0` for a single-line prompt.
+Path, branch, working-tree flags, then PR state — here: open and approved.
+
+Two deliberate omissions keep the line to what you can't already see:
+
+- **Status above, cursor below.** Your input starts at the same column however
+  deep the path or long the branch name, so nothing wraps unpredictably.
+  `ZGP_PROMPT_NEWLINE=0` for a single line.
+- **No username.** It never changes on your own machine. It appears as
+  `you@host` over SSH and in red as root — the two cases where it matters.
+  `ZGP_SHOW_USER=1` to always show it, `0` never.
 
 With a Nerd Font installed you get GitHub's real Octicon glyphs instead —
  open,  draft,  merged,  closed — single-width characters, not emoji.
@@ -119,6 +126,7 @@ Set any of these **before** sourcing the plugin. Defaults shown.
 | `ZGP_ASYNC_REDRAW` | `1` | Redraw the prompt when PR data lands |
 | `ZGP_SET_PROMPT` | `1` | Set `0` to keep your own `PROMPT` (see below) |
 | `ZGP_PROMPT_NEWLINE` | `1` | Cursor on its own line below the status |
+| `ZGP_SHOW_USER` | `auto` | `auto` = over SSH or as root only; `1` always, `0` never |
 | `ZGP_SHOW_STASH` | `1` | Show the `≡n` stash counter |
 | `ZGP_SHOW_UNTRACKED` | `1` | Show the `?` untracked marker |
 | `ZGP_SKIP_BRANCHES` | `(main master production)` | Branches never queried for a PR |

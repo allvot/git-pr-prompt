@@ -84,6 +84,39 @@ check "closed"          '⊘' "$(_zgp_pr_render CLOSED false '')"
   { print -- "  FAIL draft should not show the review-pending icon"; FAILED=1 } ||
   print -- "  ok   draft hides review-pending icon"
 
+print -- "\nuser@host only when it tells you something"
+# Your own name on your own laptop is noise. It becomes information over SSH
+# (which box?) or as root (am I about to do damage?).
+prompt_with() {   # prompt_with <env assignments...>
+  zsh -c "unset SSH_TTY SSH_CONNECTION
+    $* ZGP_PR_ENABLED=0 ZGP_SYMBOL_SET=minimal
+    source '$ROOT/git-pr-prompt.plugin.zsh'
+    print -r -- \"\$PROMPT\""
+}
+
+out=$(prompt_with)
+[[ $out == *'%n'* ]] &&
+  { print -- "  FAIL local shell should not show the user: $out"; FAILED=1 } ||
+  print -- "  ok   hidden in a local shell"
+check "path is still there" '%~' "$out"
+
+out=$(prompt_with "SSH_TTY=/dev/ttys001")
+check "SSH shows user and host" '%n@%m' "$out"
+
+out=$(prompt_with "SSH_CONNECTION='10.0.0.1 22 10.0.0.2 22'")
+check "SSH_CONNECTION alone is enough" '%n@%m' "$out"
+
+out=$(prompt_with "ZGP_SHOW_USER=1")
+check "=1 forces it on locally" '%n' "$out"
+[[ $out == *'%n@%m'* ]] &&
+  { print -- "  FAIL local shell should not append the hostname"; FAILED=1 } ||
+  print -- "  ok   =1 shows the user without the hostname"
+
+out=$(prompt_with "SSH_TTY=/dev/ttys001 ZGP_SHOW_USER=0")
+[[ $out == *'%n'* ]] &&
+  { print -- "  FAIL =0 should win even over SSH: $out"; FAILED=1 } ||
+  print -- "  ok   =0 wins even over SSH"
+
 print -- "\ntwo-line prompt"
 # The cursor should sit at a fixed column on its own line, so long paths and
 # branch names never push the input right or wrap it unpredictably.
