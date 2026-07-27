@@ -145,6 +145,50 @@ out=$(zsh -c "typeset -A ZGP_SYMBOLS=(pr_open 'XX')
 check "override applied"        'XX' "$out"
 check "rest of preset intact"   '⊕' "$out"
 
+print -- "\nzgp-legend"
+# ZGP_PR_ENABLED=1 here: the legend only renders symbols, it never queries gh,
+# so the PR/Review blocks can be checked without touching the network.
+legend() {
+  zsh -c "ZGP_SYMBOL_SET=${2:-minimal} ZGP_PR_ENABLED=1
+    source '$ROOT/git-pr-prompt.plugin.zsh'
+    zgp-legend ${1:-}" 2>&1
+}
+
+out=$(legend)
+check "shows the active preset"  'preset: minimal'  "$out"
+check "has a Pull request block" 'Pull request'     "$out"
+check "has a Review block"       'Review'           "$out"
+check "explains the eye/pending" 'awaiting review'  "$out"
+check "shows a symbol"           '⊙'                "$out"
+[[ $out == *'%F'* ]] &&
+  { print -- "  FAIL legend leaked raw %F prompt escapes"; FAILED=1 } ||
+  print -- "  ok   prompt escapes are expanded, not printed"
+[[ $out == *'='* && $out == *'local'* ]] &&
+  { print -- "  FAIL legend leaked variable declarations"; FAILED=1 } ||
+  print -- "  ok   no leaked variable declarations"
+
+out=$(legend '--keys --codes')
+check "--keys shows the config key" 'review_pending' "$out"
+check "--codes shows a codepoint"   'U+'             "$out"
+
+out=$(legend '--codes' nerdfont)
+check "--codes is right for nerdfont" 'U+F407' "$out"
+
+out=$(legend --all)
+for preset in nerdfont minimal emoji github; do
+  check "--all has a $preset column" "$preset" "$out"
+done
+check "--all rows are labelled" 'awaiting review' "$out"
+
+out=$(legend --bogus)
+check "rejects unknown options" 'unknown option' "$out"
+
+out=$(zsh -c "ZGP_PR_ENABLED=0 ZGP_SHOW_STASH=0
+  source '$ROOT/git-pr-prompt.plugin.zsh'
+  zgp-legend")
+check "marks disabled PR lookups" 'ZGP_PR_ENABLED=0' "$out"
+check "marks a hidden flag"       'ZGP_SHOW_STASH=0' "$out"
+
 print -- ""
 if (( FAILED )); then
   print -- "FAILED"

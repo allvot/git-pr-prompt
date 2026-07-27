@@ -75,5 +75,6 @@ source "$ZGP_ROOT/lib/render.zsh"
 source "$ZGP_ROOT/lib/git-status.zsh"
 source "$ZGP_ROOT/lib/pr-status.zsh"
 source "$ZGP_ROOT/lib/prompt.zsh"
+source "$ZGP_ROOT/lib/legend.zsh"
 
 _zgp_setup

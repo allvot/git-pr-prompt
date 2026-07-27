@@ -145,6 +145,34 @@ PROMPT='%F{green}%n@%m%f %F{blue}%~%f${ZGP_GIT_INFO}
 
 ## Commands
 
+- **`zgp-legend`** — print every symbol the prompt can show and what it means,
+  as a table. Reflects your *live* configuration: the resolved preset, your
+  colors, and anything switched off. Forgot what a glyph means? This is the
+  answer.
+
+  ```
+  zgp-legend            symbols and meanings, grouped
+  zgp-legend --keys     also the ZGP_SYMBOLS key to override
+  zgp-legend --codes    also the Unicode codepoint
+  zgp-legend --all      all four presets side by side
+  ```
+
+  ```
+    git-pr-prompt  preset: nerdfont (auto — Nerd Font detected)
+    ~/repo ( feature/x  2)  
+
+    Pull request
+       open                          pr_open           U+F407
+       draft — not ready for review  pr_draft          U+F4DD
+       merged                        pr_merged         U+F419
+       closed without merging        pr_closed         U+F4DC
+
+    Review
+       approved                      review_approved   U+F4A4
+       changes requested             review_changes    U+F52F
+       awaiting review               review_pending    U+F441
+  ```
+
 - `zgp-pr-cache-clear` — drop every cached PR answer; useful right after
   opening, approving, or merging a PR if you don't want to wait out the TTL.
 - `zgp-font-check` — re-run Nerd Font detection and print sample glyphs. Run it
