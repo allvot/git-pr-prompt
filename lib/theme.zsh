@@ -12,6 +12,9 @@
 #   GAUGE_PALETTE[role]— your explicit per-role override
 #   themes/$GAUGE_THEME— the selected theme
 #   themes/default     — the backstop, so every key always resolves
+#
+# Whatever wins, GAUGE_COLOR_MODE has the last word on how it's emitted — see
+# lib/color.zsh.
 
 typeset -gA GAUGE_PALETTE
 
@@ -68,4 +71,8 @@ _gauge_load_theme() {
 
   source "$GAUGE_ROOT/themes/default.zsh"   # fills any role the theme omitted
   _gauge_apply_palette
+
+  # Last: fit the resolved colors to what this terminal can actually show.
+  _gauge_resolve_color_mode
+  _gauge_degrade_colors
 }

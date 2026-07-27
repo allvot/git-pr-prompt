@@ -113,15 +113,28 @@ Colors are a separate axis from symbols: `presets/` decides what the glyphs
 composes. Nerd Font glyphs in a colorless theme, geometric glyphs in a loud one —
 all valid.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/themes-dark.svg">
+  <img alt="The same prompt in every theme: default, nord, gruvbox, dracula, solarized, mono" src="assets/themes-light.svg">
+</picture>
+
 | Theme | What it is |
 |-------|------------|
 | `default` | The terminal's own eight named colors, so the prompt follows whatever scheme you already run |
+| `nord` | [Nord](https://www.nordtheme.com) — low-contrast arctic blues, muted accents |
+| `gruvbox` | [Gruvbox](https://github.com/morhetz/gruvbox) dark-bright — warm, high contrast, retro |
+| `dracula` | [Dracula](https://draculatheme.com) — saturated neon on dark |
+| `solarized` | [Solarized](https://ethanschoonover.com/solarized) accents only, so it reads on both the light and dark variants |
 | `mono` | No color at all — no escapes emitted. For screen sharing, recordings, e-ink, or letting the prompt recede |
 
 ```zsh
-GAUGE_THEME=mono
+GAUGE_THEME=dracula
 source ~/.zsh/gauge/gauge.plugin.zsh
 ```
+
+`default` and `mono` are the only themes that follow your terminal's palette; the
+four named ones are exact hex, so they look the same everywhere — see
+[Color depth](#color-depth) for what happens when the terminal can't show hex.
 
 ### Writing a theme
 
@@ -141,8 +154,7 @@ _gauge_palette \
   muted     '#4c566a'   `# separators, stash, draft`
 ```
 
-Hex needs zsh 5.7+ and a truecolor terminal; named colors and 0–255 work
-everywhere. Precedence, highest first:
+Precedence, highest first:
 
 1. `GAUGE_COLORS[key]` — your explicit per-key override
 2. `GAUGE_PALETTE[role]` — your explicit per-role override
@@ -158,6 +170,34 @@ typeset -A GAUGE_PALETTE=(primary cyan)   # branch and merged PR turn cyan
 The `emoji` and `github` presets deliberately pin their own keys to `none`,
 outranking any theme — tinting an emoji, or recoloring GitHub's state circles,
 would destroy the thing that makes them readable.
+
+### Color depth
+
+`%F{#bd93f9}` needs zsh 5.7+ and a terminal that speaks 24-bit color. Rather than
+let a hex theme come out as literal text, `GAUGE_COLOR_MODE` decides how hex is
+emitted — named colors and plain 0–255 indices are already portable and pass
+through untouched:
+
+| Mode | What it does |
+|------|--------------|
+| `auto` (default) | `NO_COLOR` set → `none`; `COLORTERM=truecolor`/`24bit` on zsh 5.7+ → `truecolor`; otherwise `256` |
+| `truecolor` | Emit hex as-is |
+| `256` | Degrade each hex to the nearest xterm-256 color, so hex themes still look close |
+| `none` | Drop all color, whatever the theme said — the same result as `GAUGE_THEME=mono` |
+
+The degradation picks the nearest color in the 6×6×6 cube **or** the 24-step gray
+ramp, whichever is closer by RGB distance, so grays stay gray instead of
+snapping to the nearest brownish cube cell. Indices 0–15 are left out on purpose:
+a terminal is free to redefine those, so they aren't a color anything can match to.
+
+`gauge-legend` prints what you actually got:
+
+```
+gauge  preset: minimal   theme: dracula (256)
+```
+
+It applies to your own overrides too — set `GAUGE_COLORS[branch]='#ff0000'` and it
+becomes `196` on a 256-color terminal, exactly as a theme's would.
 
 ## Requirements
 
@@ -201,7 +241,8 @@ Set any of these **before** sourcing the plugin. Defaults shown.
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `GAUGE_SYMBOL_SET` | `auto` | `auto` / `nerdfont` / `minimal` / `emoji` / `github` |
-| `GAUGE_THEME` | `default` | Colors: `default` / `mono` (see [Themes](#themes)) |
+| `GAUGE_THEME` | `default` | Colors: `default` / `nord` / `gruvbox` / `dracula` / `solarized` / `mono` (see [Themes](#themes)) |
+| `GAUGE_COLOR_MODE` | `auto` | `auto` / `truecolor` / `256` / `none` (see [Color depth](#color-depth)) |
 | `GAUGE_HAS_NERDFONT` | *detected* | Force detection: `1` yes, `0` no |
 | `GAUGE_SHOW_REVIEW_PENDING` | `1` | Show the "awaiting review" icon |
 | `GAUGE_PR_ENABLED` | `1` | Set `0` to disable all `gh` queries |
@@ -418,6 +459,8 @@ for theme in dark light; do
     --title 'gauge: every pull request state' > assets/states-$theme.svg
   zsh tools/samples.zsh presets | python3 tools/ansi2svg.py --theme $theme \
     --title 'Every symbol in every preset: nerdfont, minimal, emoji, github' > assets/presets-$theme.svg
+  zsh tools/samples.zsh themes | python3 tools/ansi2svg.py --theme $theme \
+    --title 'Every theme: default, nord, gruvbox, dracula, solarized, mono' > assets/themes-$theme.svg
   tools/svg2png.sh assets/presets-$theme.svg    # needs Chrome + a Nerd Font
 done
 ```

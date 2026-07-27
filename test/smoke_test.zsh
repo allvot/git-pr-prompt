@@ -501,17 +501,139 @@ out=$(zsh -c "GAUGE_PR_ENABLED=1 GAUGE_TITLE=0 GAUGE_SYMBOL_SET=minimal
   gauge-legend" 2>&1)
 check "legend names the theme" 'theme: default' "$out"
 
+print -- "\nnamed palettes and color depth"
+# The named themes are hex, so they look the same everywhere instead of following
+# the terminal scheme. Hex needs a terminal that can show it: GAUGE_COLOR_MODE
+# decides whether to emit it as-is, degrade it to the 256-color cube, or drop it.
+
+# Every named theme must define every role, in a form the prompt can emit.
+for t in nord gruvbox dracula solarized; do
+  out=$(theme_dump GAUGE_THEME=$t GAUGE_COLOR_MODE=truecolor)
+  check "$t resolves" "theme=$t" "$out"
+  bad=()
+  for k in user user_root path branch separator flags prompt_char dirty staged \
+           untracked ahead behind stash pr_open pr_draft pr_merged pr_closed \
+           review_approved review_changes review_pending; do
+    v=${${(M)${(f)out}:#${k}=*}#*=}
+    [[ $v == (\#[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]|none|<0-255>|[a-z]*) ]] ||
+      bad+="$k=${v:-<unset>}"
+  done
+  if (( $#bad )); then
+    print -- "  FAIL $t has unusable colors: ${bad[*]}"; FAILED=1
+  else
+    print -- "  ok   $t defines all 20 keys as emittable colors"
+  fi
+done
+
+# Each named theme must be visibly its own thing, not a copy.
+out=$(theme_dump GAUGE_THEME=dracula GAUGE_COLOR_MODE=truecolor)
+check "dracula's branch is its pink" 'branch=#ff79c6' "$out"
+out=$(theme_dump GAUGE_THEME=nord GAUGE_COLOR_MODE=truecolor)
+check "nord's path is a frost blue"  'path=#81a1c1'   "$out"
+out=$(theme_dump GAUGE_THEME=gruvbox GAUGE_COLOR_MODE=truecolor)
+check "gruvbox's danger is its red"  'untracked=#fb4934' "$out"
+out=$(theme_dump GAUGE_THEME=solarized GAUGE_COLOR_MODE=truecolor)
+check "solarized's ok is its green"  'staged=#859900'  "$out"
+
+# 256 mode: every hex becomes an index the prompt can emit anywhere.
+out=$(theme_dump GAUGE_THEME=dracula GAUGE_COLOR_MODE=256)
+[[ $out == *'#'* ]] &&
+  { print -- "  FAIL 256 mode left hex in GAUGE_COLORS"; FAILED=1 } ||
+  print -- "  ok   256 mode leaves no hex behind"
+check "and produces an index"     'branch=212' "$out"
+
+# The degradation has to actually pick the nearest color, not just any index.
+# Brute-forced in python over the whole cube + gray ramp as an independent oracle.
+if (( $+commands[python3] )); then
+  hexes=('#ff0000' '#000000' '#ffffff' '#ff79c6' '#81a1c1' '#928374' '#586e75'
+         '#08f' '#123456' '#4c566a')
+  # Quote each element separately: a bare #rrggbb at the start of a word would
+  # be a comment in the non-interactive subshell.
+  hexq=${(j: :)${(qq)hexes}}
+  got=$(zsh -c "source '$ROOT/lib/color.zsh'
+    for h in $hexq; do print -rn -- \"\$(_gauge_hex_to_256 \$h) \"; done")
+  want=$(python3 -c "
+import sys; sys.path.insert(0, '$ROOT/tools')
+from ansi2svg import xterm256
+def rgb(h):
+    h = h.lstrip('#')
+    if len(h) == 3: h = ''.join(c * 2 for c in h)
+    return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+def near(h):
+    r, g, b = rgb(h)
+    best = min(range(16, 256), key=lambda n: sum(
+        (a - c) ** 2 for a, c in zip(rgb(xterm256(n, None)), (r, g, b))))
+    return best
+print(' '.join(str(near(h)) for h in '${hexes[*]}'.split()), end=' ')")
+  check "hex -> nearest xterm-256 index" "$want" "$got"
+fi
+
+# A 3-digit hex is the same color as its 6-digit form, in both modes.
+out=$(theme_dump "typeset -A GAUGE_COLORS=(branch '#f00' path '#ff0000');" GAUGE_COLOR_MODE=truecolor)
+check "short hex expands"     'branch=#ff0000' "$out"
+out=$(theme_dump "typeset -A GAUGE_COLORS=(branch '#f00');" GAUGE_COLOR_MODE=256)
+check "short hex degrades"    'branch=196'     "$out"
+
+# Named colors and plain indices are already portable — leave them alone.
+out=$(theme_dump GAUGE_COLOR_MODE=256)
+check "named colors survive 256 mode" 'path=blue' "$out"
+check "indices survive 256 mode"      'stash=242' "$out"
+
+# `none` is the escape hatch for a terminal (or a recording) with no color:
+# it blanks every key, whatever the theme said.
+out=$(theme_dump GAUGE_THEME=dracula GAUGE_COLOR_MODE=none)
+check "none blanks the palette"  'branch=none' "$out"
+check "including the dim keys"   'stash=none'  "$out"
+out=$(zsh -c "GAUGE_THEME=dracula GAUGE_COLOR_MODE=none GAUGE_PR_ENABLED=0 GAUGE_TITLE=0
+  source '$ROOT/gauge.plugin.zsh'
+  print -r -- \"\$(_gauge_pr_render OPEN false APPROVED)|\$PROMPT\"")
+[[ $out == *'%F'* ]] &&
+  { print -- "  FAIL GAUGE_COLOR_MODE=none still emitted escapes"; FAILED=1 } ||
+  print -- "  ok   GAUGE_COLOR_MODE=none emits no escapes"
+
+# auto: believe COLORTERM, honor NO_COLOR, otherwise assume 256.
+mode() {   # mode [env assignments...] -> the resolved mode
+  zsh -c "$* GAUGE_PR_ENABLED=0 GAUGE_TITLE=0
+    source '$ROOT/gauge.plugin.zsh' 2>&1
+    print -r -- \"mode=\$GAUGE_ACTIVE_COLOR_MODE\""
+}
+check "auto trusts COLORTERM"    'mode=truecolor' "$(mode COLORTERM=truecolor)"
+check "auto accepts 24bit"       'mode=truecolor' "$(mode COLORTERM=24bit)"
+check "auto falls back to 256"   'mode=256'       "$(mode 'unset COLORTERM;')"
+check "auto honors NO_COLOR"     'mode=none'      "$(mode NO_COLOR=1 COLORTERM=truecolor)"
+check "an explicit mode wins"    'mode=256'       "$(mode COLORTERM=truecolor GAUGE_COLOR_MODE=256)"
+
+out=$(mode GAUGE_COLOR_MODE=hicolor)
+check "unknown mode warns"       'unknown GAUGE_COLOR_MODE' "$out"
+check "unknown mode degrades"    'mode=256'                 "$out"
+
+# The legend is where you check what you actually got.
+out=$(zsh -c "GAUGE_THEME=nord GAUGE_COLOR_MODE=256 GAUGE_PR_ENABLED=0 GAUGE_TITLE=0
+  source '$ROOT/gauge.plugin.zsh'
+  gauge-legend" 2>&1)
+check "legend names the palette" 'theme: nord' "$out"
+check "legend names the depth"   '256'         "$out"
+
+# Palettes are still just colors: any theme must compose with any symbol set.
+out=$(zsh -c "GAUGE_SYMBOL_SET=github GAUGE_THEME=dracula GAUGE_COLOR_MODE=truecolor
+  GAUGE_PR_ENABLED=0 GAUGE_TITLE=0
+  source '$ROOT/gauge.plugin.zsh'
+  print -r -- \"\${GAUGE_SYMBOLS[pr_open]}|\${GAUGE_COLORS[pr_open]}|\${GAUGE_COLORS[branch]}\"")
+check "github emoji survive a hex theme" '🟢|none' "$out"
+check "but the branch is themed"         '|#ff79c6' "$out"
+
 print -- "\nREADME images match the code"
 # The SVGs in assets/ are generated from the prompt's own renderers. If a color
 # or a symbol changes and the images aren't regenerated, the README lies — so
 # regenerate into a temp file and diff.
 if (( $+commands[python3] )); then
-  for mode in prompt states presets; do
+  for mode in prompt states presets themes; do
     for theme in dark light; do
       case $mode in
         prompt)  title="gauge: path, branch, working-tree flags, PR state" ;;
         states)  title="gauge: every pull request state" ;;
         presets) title="Every symbol in every preset: nerdfont, minimal, emoji, github" ;;
+        themes)  title="Every theme: default, nord, gruvbox, dracula, solarized, mono" ;;
       esac
       zsh "$ROOT/tools/samples.zsh" $mode \
         | python3 "$ROOT/tools/ansi2svg.py" --theme $theme --title "$title" \
@@ -546,6 +668,14 @@ import sys; sys.path.insert(0, '$ROOT/tools')
 from ansi2svg import cell_width as w
 print(w('*'), w('\u2295'), w('\U0001f500'), w('a\U0001f7e2'), w('\u2705\ufe0f'))")
   check "cell width: ascii, geometric, emoji, mixed, +VS16" '1 1 2 3 2' "$out"
+
+  # The gallery is the only image with hex themes in it, so it's the only one
+  # whose colors arrive as truecolor SGR (38;2;r;g;b) rather than palette indices.
+  out=$(zsh "$ROOT/tools/samples.zsh" themes | python3 "$ROOT/tools/ansi2svg.py" --theme dark)
+  check "gallery labels each theme"   'dracula'  "$out"
+  check "gallery keeps dracula's pink" '#ff79c6' "$out"
+  check "gallery keeps nord's blue"    '#81a1c1' "$out"
+  check "and mono's row is plain"      'mono'    "$out"
 
   # Colors must survive the ANSI -> SVG conversion, not just be present.
   out=$(zsh "$ROOT/tools/samples.zsh" prompt | python3 "$ROOT/tools/ansi2svg.py" --theme dark)

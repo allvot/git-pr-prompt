@@ -74,8 +74,22 @@ case ${1:-prompt} in
              END { for (i = 1; i <= last; i++) print l[i] }'
     ;;
 
+  themes)   # the same line in every theme — one subshell each, because a theme
+            # is resolved once at load time
+    local t
+    for t in default nord gruvbox dracula solarized mono; do
+      printf '  %-11s' "$t"
+      GAUGE_THEME=$t GAUGE_COLOR_MODE=truecolor zsh "$ROOT/tools/samples.zsh" line
+    done
+    ;;
+
+  line)     # one status line, no cursor row — what `themes` calls per theme
+    _sample_line '~/dev/acme' 'feature/login' "$(_sample_flags)" \
+      "$(_gauge_pr_render OPEN false APPROVED)"
+    ;;
+
   *)
-    print -u2 "usage: samples.zsh [prompt|states|flags|presets]"
+    print -u2 "usage: samples.zsh [prompt|states|flags|presets|themes]"
     return 1
     ;;
 esac

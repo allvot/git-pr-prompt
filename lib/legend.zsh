@@ -78,7 +78,7 @@ gauge-legend() {
   local set_note="preset: ${GAUGE_ACTIVE_SYMBOL_SET}"
   [[ $GAUGE_SYMBOL_SET == auto ]] &&
     set_note+=" (auto — Nerd Font $( (( GAUGE_HAS_NERDFONT )) && print detected || print "not found"))"
-  set_note+="   theme: ${GAUGE_ACTIVE_THEME}"
+  set_note+="   theme: ${GAUGE_ACTIVE_THEME} (${GAUGE_ACTIVE_COLOR_MODE})"
   print -P -- ""
   print -P -- "  %Bgauge%b  %F{242}${set_note}%f"
 

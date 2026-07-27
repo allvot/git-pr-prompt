@@ -8,8 +8,9 @@ inline HTML, so a colored terminal example can only be an image. SVG keeps it
 text — diffable in review, sharp at any zoom — unlike a screenshot.
 
 Reads stdin, writes SVG to stdout. Stdlib only. Handles the SGR subset this
-prompt emits: reset, the 8 basic and 8 bright foregrounds, and 256-color
-(38;5;N). Anything else is ignored rather than guessed at.
+prompt emits: reset, the 8 basic and 8 bright foregrounds, 256-color (38;5;N),
+and truecolor (38;2;R;G;B) for the hex themes. Anything else is ignored rather
+than guessed at.
 """
 import argparse
 import re
@@ -111,6 +112,10 @@ def parse_line(line, theme):
             elif c == 38 and codes[i + 1:i + 2] == [5]:
                 color = xterm256(codes[i + 2], theme)
                 i += 2
+            elif c == 38 and codes[i + 1:i + 2] == [2]:
+                # Truecolor, which is what a hex theme emits.
+                color = "#%02x%02x%02x" % tuple(codes[i + 2:i + 5])
+                i += 4
             i += 1
 
     if pos < len(line):

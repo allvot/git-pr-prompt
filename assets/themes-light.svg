@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="546" height="154" viewBox="0 0 546 154" role="img" aria-label="Every theme: default, nord, gruvbox, dracula, solarized, mono">
+<rect width="546" height="154" rx="8" fill="#ffffff"/>
+<text xml:space="preserve" font-family="'JetBrainsMono Nerd Font Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15px" fill="#24292f">
+<tspan x="12.0" y="33">  default    </tspan>
+<tspan x="129.0" y="33" fill="#0969da">~/dev/acme</tspan>
+<tspan x="219.0" y="33"> </tspan>
+<tspan x="228.0" y="33" fill="#6c6c6c">│</tspan>
+<tspan x="237.0" y="33"> </tspan>
+<tspan x="246.0" y="33" fill="#8250df">feature/login</tspan>
+<tspan x="363.0" y="33"> </tspan>
+<tspan x="372.0" y="33" fill="#6c6c6c">│</tspan>
+<tspan x="381.0" y="33"> </tspan>
+<tspan x="390.0" y="33" fill="#9a6700">*</tspan>
+<tspan x="399.0" y="33" fill="#1a7f37">+</tspan>
+<tspan x="408.0" y="33" fill="#cf222e">?</tspan>
+<tspan x="417.0" y="33"> </tspan>
+<tspan x="426.0" y="33" fill="#1b7c83">↑2</tspan>
+<tspan x="444.0" y="33"> </tspan>
+<tspan x="453.0" y="33" fill="#6c6c6c">≡1</tspan>
+<tspan x="471.0" y="33"> </tspan>
+<tspan x="480.0" y="33" fill="#6c6c6c">│</tspan>
+<tspan x="489.0" y="33"> </tspan>
+<tspan x="498.0" y="33" fill="#1a7f37">⊙</tspan>
+<tspan x="507.0" y="33"> </tspan>
+<tspan x="516.0" y="33" fill="#1a7f37">✓</tspan>
+<tspan x="12.0" y="54">  nord       </tspan>
+<tspan x="129.0" y="54" fill="#81a1c1">~/dev/acme</tspan>
+<tspan x="219.0" y="54"> </tspan>
+<tspan x="228.0" y="54" fill="#616e88">│</tspan>
+<tspan x="237.0" y="54"> </tspan>
+<tspan x="246.0" y="54" fill="#b48ead">feature/login</tspan>
+<tspan x="363.0" y="54"> </tspan>
+<tspan x="372.0" y="54" fill="#616e88">│</tspan>
+<tspan x="381.0" y="54"> </tspan>
+<tspan x="390.0" y="54" fill="#ebcb8b">*</tspan>
+<tspan x="399.0" y="54" fill="#a3be8c">+</tspan>
+<tspan x="408.0" y="54" fill="#bf616a">?</tspan>
+<tspan x="417.0" y="54"> </tspan>
+<tspan x="426.0" y="54" fill="#88c0d0">↑2</tspan>
+<tspan x="444.0" y="54"> </tspan>
+<tspan x="453.0" y="54" fill="#616e88">≡1</tspan>
+<tspan x="471.0" y="54"> </tspan>
+<tspan x="480.0" y="54" fill="#616e88">│</tspan>
+<tspan x="489.0" y="54"> </tspan>
+<tspan x="498.0" y="54" fill="#a3be8c">⊙</tspan>
+<tspan x="507.0" y="54"> </tspan>
+<tspan x="516.0" y="54" fill="#a3be8c">✓</tspan>
+<tspan x="12.0" y="76">  gruvbox    </tspan>
+<tspan x="129.0" y="76" fill="#83a598">~/dev/acme</tspan>
+<tspan x="219.0" y="76"> </tspan>
+<tspan x="228.0" y="76" fill="#928374">│</tspan>
+<tspan x="237.0" y="76"> </tspan>
+<tspan x="246.0" y="76" fill="#d3869b">feature/login</tspan>
+<tspan x="363.0" y="76"> </tspan>
+<tspan x="372.0" y="76" fill="#928374">│</tspan>
+<tspan x="381.0" y="76"> </tspan>
+<tspan x="390.0" y="76" fill="#fabd2f">*</tspan>
+<tspan x="399.0" y="76" fill="#b8bb26">+</tspan>
+<tspan x="408.0" y="76" fill="#fb4934">?</tspan>
+<tspan x="417.0" y="76"> </tspan>
+<tspan x="426.0" y="76" fill="#8ec07c">↑2</tspan>
+<tspan x="444.0" y="76"> </tspan>
+<tspan x="453.0" y="76" fill="#928374">≡1</tspan>
+<tspan x="471.0" y="76"> </tspan>
+<tspan x="480.0" y="76" fill="#928374">│</tspan>
+<tspan x="489.0" y="76"> </tspan>
+<tspan x="498.0" y="76" fill="#b8bb26">⊙</tspan>
+<tspan x="507.0" y="76"> </tspan>
+<tspan x="516.0" y="76" fill="#b8bb26">✓</tspan>
+<tspan x="12.0" y="98">  dracula    </tspan>
+<tspan x="129.0" y="98" fill="#bd93f9">~/dev/acme</tspan>
+<tspan x="219.0" y="98"> </tspan>
+<tspan x="228.0" y="98" fill="#6272a4">│</tspan>
+<tspan x="237.0" y="98"> </tspan>
+<tspan x="246.0" y="98" fill="#ff79c6">feature/login</tspan>
+<tspan x="363.0" y="98"> </tspan>
+<tspan x="372.0" y="98" fill="#6272a4">│</tspan>
+<tspan x="381.0" y="98"> </tspan>
+<tspan x="390.0" y="98" fill="#f1fa8c">*</tspan>
+<tspan x="399.0" y="98" fill="#50fa7b">+</tspan>
+<tspan x="408.0" y="98" fill="#ff5555">?</tspan>
+<tspan x="417.0" y="98"> </tspan>
+<tspan x="426.0" y="98" fill="#8be9fd">↑2</tspan>
+<tspan x="444.0" y="98"> </tspan>
+<tspan x="453.0" y="98" fill="#6272a4">≡1</tspan>
+<tspan x="471.0" y="98"> </tspan>
+<tspan x="480.0" y="98" fill="#6272a4">│</tspan>
+<tspan x="489.0" y="98"> </tspan>
+<tspan x="498.0" y="98" fill="#50fa7b">⊙</tspan>
+<tspan x="507.0" y="98"> </tspan>
+<tspan x="516.0" y="98" fill="#50fa7b">✓</tspan>
+<tspan x="12.0" y="120">  solarized  </tspan>
+<tspan x="129.0" y="120" fill="#268bd2">~/dev/acme</tspan>
+<tspan x="219.0" y="120"> </tspan>
+<tspan x="228.0" y="120" fill="#586e75">│</tspan>
+<tspan x="237.0" y="120"> </tspan>
+<tspan x="246.0" y="120" fill="#d33682">feature/login</tspan>
+<tspan x="363.0" y="120"> </tspan>
+<tspan x="372.0" y="120" fill="#586e75">│</tspan>
+<tspan x="381.0" y="120"> </tspan>
+<tspan x="390.0" y="120" fill="#b58900">*</tspan>
+<tspan x="399.0" y="120" fill="#859900">+</tspan>
+<tspan x="408.0" y="120" fill="#dc322f">?</tspan>
+<tspan x="417.0" y="120"> </tspan>
+<tspan x="426.0" y="120" fill="#2aa198">↑2</tspan>
+<tspan x="444.0" y="120"> </tspan>
+<tspan x="453.0" y="120" fill="#586e75">≡1</tspan>
+<tspan x="471.0" y="120"> </tspan>
+<tspan x="480.0" y="120" fill="#586e75">│</tspan>
+<tspan x="489.0" y="120"> </tspan>
+<tspan x="498.0" y="120" fill="#859900">⊙</tspan>
+<tspan x="507.0" y="120"> </tspan>
+<tspan x="516.0" y="120" fill="#859900">✓</tspan>
+<tspan x="12.0" y="141">  mono       ~/dev/acme │ feature/login │ *+? ↑2 ≡1 │ ⊙ ✓</tspan>
+</text>
+</svg>

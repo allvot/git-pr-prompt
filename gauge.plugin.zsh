@@ -14,6 +14,7 @@ typeset -g GAUGE_ROOT="${0:A:h}"
 
 : ${GAUGE_SYMBOL_SET:=auto}                  # auto | nerdfont | minimal | emoji | github
 : ${GAUGE_THEME:=default}                    # colors: see themes/
+: ${GAUGE_COLOR_MODE:=auto}                  # auto | truecolor | 256 | none
 : ${GAUGE_PR_ENABLED:=1}                                         # query gh at all
 : ${GAUGE_PR_CACHE_TTL:=30}                                      # seconds
 : ${GAUGE_PR_CACHE_DIR:="${TMPDIR:-/tmp}/gauge-cache"}
@@ -82,6 +83,7 @@ source "$GAUGE_ROOT/presets/minimal.zsh"
 
 # Colors. After the presets, so a preset that must not be tinted (emoji, github)
 # can pin those keys to `none` and have that survive any theme.
+source "$GAUGE_ROOT/lib/color.zsh"
 source "$GAUGE_ROOT/lib/theme.zsh"
 _gauge_load_theme
 
