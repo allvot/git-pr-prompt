@@ -11,7 +11,7 @@
 # 🚫 closed    closed without merging
 # ✅ approved  ❌ changes requested  👀 waiting on review
 
-_zgp_fill ZGP_SYMBOLS \
+_gauge_fill GAUGE_SYMBOLS \
   pr_open          '🔀' \
   pr_draft         '🚧' \
   pr_merged        '🎉' \
@@ -21,7 +21,7 @@ _zgp_fill ZGP_SYMBOLS \
   review_pending   '👀'
 
 # Emoji carry their own color — `none` suppresses the %F{...} wrapper.
-_zgp_fill ZGP_COLORS \
+_gauge_fill GAUGE_COLORS \
   pr_open          none \
   pr_draft         none \
   pr_merged        none \

@@ -15,7 +15,7 @@
 #   changes   nf-oct-x_circle                 U+F52F
 #   pending   nf-oct-eye                      U+F441
 
-_zgp_fill ZGP_SYMBOLS \
+_gauge_fill GAUGE_SYMBOLS \
   dirty            ''  \
   staged           ''  \
   untracked        ''  \

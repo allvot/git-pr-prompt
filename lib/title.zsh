@@ -5,8 +5,8 @@
 # loses its status line — the title doesn't care, and it makes a tab bar
 # readable while you're at it.
 
-_zgp_title() {
-  (( ZGP_TITLE )) || return
+_gauge_title() {
+  (( GAUGE_TITLE )) || return
 
   local branch=$1 root text
   root=$(git rev-parse --show-toplevel 2>/dev/null)

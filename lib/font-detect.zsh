@@ -1,4 +1,4 @@
-# Nerd Font detection, so `ZGP_SYMBOL_SET=auto` can use real Octicon glyphs
+# Nerd Font detection, so `GAUGE_SYMBOL_SET=auto` can use real Octicon glyphs
 # ( U+F407 and friends) where they'll render, and fall back to the geometric
 # set (⊙ ◌ ⊕ ⊘) where they'd show up as tofu boxes.
 #
@@ -7,7 +7,7 @@
 # When in doubt it answers "no", because a wrong yes means unreadable boxes
 # while a wrong no just means plainer symbols.
 
-: ${ZGP_FONT_CACHE:="${XDG_CACHE_HOME:-$HOME/.cache}/git-pr-prompt/font"}
+: ${GAUGE_FONT_CACHE:="${XDG_CACHE_HOME:-$HOME/.cache}/gauge/font"}
 
 # Font family names that ship Nerd Font glyphs.
 #
@@ -15,14 +15,14 @@
 # "JetBrainsMono NFM" (NF = proportional, NFM = mono, NFP = propo), while the
 # long "JetBrainsMono Nerd Font Mono" only exists as nameID 16. Terminals that
 # match on nameID 1 need the short name, so both spellings must be recognised.
-_zgp_nerdfont_pattern='(nerd[ _-]?font|nerdfont|[ _-]nf[mp]?([ _-]|$)|powerline|meslolgs|caskaydia|symbols nerd)'
+_gauge_nerdfont_pattern='(nerd[ _-]?font|nerdfont|[ _-]nf[mp]?([ _-]|$)|powerline|meslolgs|caskaydia|symbols nerd)'
 
-_zgp_font_probe() {
+_gauge_font_probe() {
   local -a hits
   local out
 
   # 1. Explicit opt-in / opt-out always wins.
-  [[ -n ${ZGP_HAS_NERDFONT-} ]] && { print -r -- "$ZGP_HAS_NERDFONT"; return }
+  [[ -n ${GAUGE_HAS_NERDFONT-} ]] && { print -r -- "$GAUGE_HAS_NERDFONT"; return }
 
   # 2. Installed font files (strongest portable signal).
   if [[ $OSTYPE == darwin* ]]; then
@@ -50,7 +50,7 @@ _zgp_font_probe() {
   for cfg in $configs; do
     [[ -r $cfg ]] || continue
     out=$(tr 'A-Z' 'a-z' < "$cfg" 2>/dev/null)
-    [[ $out =~ $_zgp_nerdfont_pattern ]] && { print -r -- 1; return }
+    [[ $out =~ $_gauge_nerdfont_pattern ]] && { print -r -- 1; return }
   done
 
   # 4. macOS terminals that keep their font in defaults(1).
@@ -58,11 +58,11 @@ _zgp_font_probe() {
     case $TERM_PROGRAM in
       iTerm.app)
         out=$(defaults read com.googlecode.iterm2 "New Bookmarks" 2>/dev/null | tr 'A-Z' 'a-z')
-        [[ $out =~ $_zgp_nerdfont_pattern ]] && { print -r -- 1; return }
+        [[ $out =~ $_gauge_nerdfont_pattern ]] && { print -r -- 1; return }
         ;;
       Apple_Terminal)
         out=$(defaults read com.apple.Terminal "Window Settings" 2>/dev/null | tr 'A-Z' 'a-z')
-        [[ $out =~ $_zgp_nerdfont_pattern ]] && { print -r -- 1; return }
+        [[ $out =~ $_gauge_nerdfont_pattern ]] && { print -r -- 1; return }
         ;;
     esac
   fi
@@ -71,45 +71,45 @@ _zgp_font_probe() {
 }
 
 # Cached answer: 1 = Nerd Font glyphs are safe to use, 0 = fall back.
-_zgp_has_nerdfont() {
-  if [[ -z ${ZGP_HAS_NERDFONT-} && -r $ZGP_FONT_CACHE ]]; then
-    ZGP_HAS_NERDFONT=$(<"$ZGP_FONT_CACHE")
+_gauge_has_nerdfont() {
+  if [[ -z ${GAUGE_HAS_NERDFONT-} && -r $GAUGE_FONT_CACHE ]]; then
+    GAUGE_HAS_NERDFONT=$(<"$GAUGE_FONT_CACHE")
   fi
 
-  if [[ -z ${ZGP_HAS_NERDFONT-} ]]; then
-    ZGP_HAS_NERDFONT=$(_zgp_font_probe)
-    mkdir -p "${ZGP_FONT_CACHE:h}" 2>/dev/null &&
-      print -r -- "$ZGP_HAS_NERDFONT" > "$ZGP_FONT_CACHE" 2>/dev/null
+  if [[ -z ${GAUGE_HAS_NERDFONT-} ]]; then
+    GAUGE_HAS_NERDFONT=$(_gauge_font_probe)
+    mkdir -p "${GAUGE_FONT_CACHE:h}" 2>/dev/null &&
+      print -r -- "$GAUGE_HAS_NERDFONT" > "$GAUGE_FONT_CACHE" 2>/dev/null
   fi
 
-  (( ZGP_HAS_NERDFONT ))
+  (( GAUGE_HAS_NERDFONT ))
 }
 
 # Re-run detection (call after installing a font or switching terminal fonts).
-zgp-font-check() {
+gauge-font-check() {
   local force=""
   [[ $1 == (--yes|--no) ]] && force=$1
 
   case $force in
     --yes|--no)
-      ZGP_HAS_NERDFONT=$([[ $force == --yes ]] && print 1 || print 0)
-      mkdir -p "${ZGP_FONT_CACHE:h}" 2>/dev/null &&
-        print -r -- "$ZGP_HAS_NERDFONT" > "$ZGP_FONT_CACHE"
+      GAUGE_HAS_NERDFONT=$([[ $force == --yes ]] && print 1 || print 0)
+      mkdir -p "${GAUGE_FONT_CACHE:h}" 2>/dev/null &&
+        print -r -- "$GAUGE_HAS_NERDFONT" > "$GAUGE_FONT_CACHE"
       ;;
     *)
-      unset ZGP_HAS_NERDFONT
-      rm -f "$ZGP_FONT_CACHE" 2>/dev/null
+      unset GAUGE_HAS_NERDFONT
+      rm -f "$GAUGE_FONT_CACHE" 2>/dev/null
       ;;
   esac
 
-  _zgp_has_nerdfont
-  local answer=$ZGP_HAS_NERDFONT
+  _gauge_has_nerdfont
+  local answer=$GAUGE_HAS_NERDFONT
 
-  print -P -- "Nerd Font detected: %B$( (( answer )) && print yes || print no )%b  (cached in $ZGP_FONT_CACHE)"
+  print -P -- "Nerd Font detected: %B$( (( answer )) && print yes || print no )%b  (cached in $GAUGE_FONT_CACHE)"
   print -P -- "These should look like GitHub's PR icons, not boxes:"
   print -r -- "           "
   print -P -- ""
-  print -P -- "If they ARE boxes: %F{cyan}zgp-font-check --no%f"
-  print -P -- "If they render fine but detection said no: %F{cyan}zgp-font-check --yes%f"
+  print -P -- "If they ARE boxes: %F{cyan}gauge-font-check --no%f"
+  print -P -- "If they render fine but detection said no: %F{cyan}gauge-font-check --yes%f"
   print -P -- "Then reload: %F{cyan}exec zsh%f"
 }

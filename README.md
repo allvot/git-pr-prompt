@@ -1,4 +1,7 @@
-# git-pr-prompt
+# gauge
+
+*An instrument panel for your shell — read the repo and its pull request without
+looking, like glancing at a dial.*
 
 A small, dependency-light zsh prompt that shows your git working-tree state **and
 the status of the branch's GitHub pull request** — open, draft, merged, closed,
@@ -15,17 +18,17 @@ arrives (the prompt redraws itself via `SIGUSR1`).
 
 Path, branch, working-tree flags, then PR state — here: open and approved. The
 `│` separators are dim, so they mark where each group ends without competing
-with its contents. `ZGP_GROUP_STYLE=parens` gets you `(PRE-1470 *+? ↑2 ≡1)`
-instead, and `ZGP_SYMBOLS[separator]` changes the character.
+with its contents. `GAUGE_GROUP_STYLE=parens` gets you `(PRE-1470 *+? ↑2 ≡1)`
+instead, and `GAUGE_SYMBOLS[separator]` changes the character.
 
 Two deliberate omissions keep the line to what you can't already see:
 
 - **Status above, cursor below.** Your input starts at the same column however
   deep the path or long the branch name, so nothing wraps unpredictably.
-  `ZGP_PROMPT_NEWLINE=0` for a single line.
+  `GAUGE_PROMPT_NEWLINE=0` for a single line.
 - **No username.** It never changes on your own machine. It appears as
   `you@host` over SSH and in red as root — the two cases where it matters.
-  `ZGP_SHOW_USER=1` to always show it, `0` never.
+  `GAUGE_SHOW_USER=1` to always show it, `0` never.
 
 With a Nerd Font installed you get GitHub's real Octicon glyphs instead —
  open,  draft,  merged,  closed — single-width characters, not emoji.
@@ -33,7 +36,7 @@ Detection is automatic; see [Symbols](#symbols).
 
 ## Symbols
 
-The default is **`ZGP_SYMBOL_SET=auto`**: real GitHub icon glyphs if your
+The default is **`GAUGE_SYMBOL_SET=auto`**: real GitHub icon glyphs if your
 terminal has a Nerd Font, and the geometric set if it doesn't — so it looks
 right out of the box either way, with no tofu boxes.
 
@@ -57,7 +60,7 @@ right out of the box either way, with no tofu boxes.
   [Nerd Font](https://nerdfonts.com) — same family Starship and powerlevel10k
   draw from. Install one with
   `brew install --cask font-jetbrains-mono-nerd-font`, set it as your terminal
-  font, then run `zgp-font-check`.
+  font, then run `gauge-font-check`.
 - **`minimal`** — plain Unicode geometry. Renders in any font, no install. Also
   the backstop preset: it supplies any key another preset leaves undefined.
 - **`emoji`** / **`github`** — for terminals without a patched font where you'd
@@ -65,7 +68,7 @@ right out of the box either way, with no tofu boxes.
   (open green, draft gray, merged purple, closed red).
 
 Run **`zsh tools/preview.zsh`** to see all four rendered in your own terminal
-and font, then pick with `ZGP_SYMBOL_SET=nerdfont` (or `auto` to keep the
+and font, then pick with `GAUGE_SYMBOL_SET=nerdfont` (or `auto` to keep the
 detection).
 
 `nerdfont` also restyles the local flags ( modified,  staged,  untracked,
@@ -81,8 +84,8 @@ detection).
 
 Each flag is colored by what it *means* — work in progress, staged and ready,
 not tracked, remote-related, background — so a run like `*+? ↑2 ≡1` is
-recognised at a glance instead of read. `ZGP_FLAG_COLORS=0` puts them all back
-in one color (`ZGP_COLORS[flags]`).
+recognised at a glance instead of read. `GAUGE_FLAG_COLORS=0` puts them all back
+in one color (`GAUGE_COLORS[flags]`).
 
 ## Requirements
 
@@ -96,8 +99,8 @@ in one color (`ZGP_COLORS[flags]`).
 **Manual**
 
 ```bash
-git clone https://github.com/allvot/git-pr-prompt.git ~/.zsh/git-pr-prompt
-echo 'source ~/.zsh/git-pr-prompt/git-pr-prompt.plugin.zsh' >> ~/.zshrc
+git clone https://github.com/allvot/gauge.git ~/.zsh/gauge
+echo 'source ~/.zsh/gauge/gauge.plugin.zsh' >> ~/.zshrc
 ```
 
 Or run the bundled installer from the clone, which backs up your `~/.zshrc`
@@ -110,14 +113,14 @@ first and appends the `source` line only if it isn't already there:
 **oh-my-zsh**
 
 ```bash
-git clone https://github.com/allvot/git-pr-prompt.git \
-  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/git-pr-prompt
-# then add git-pr-prompt to plugins=(...) in ~/.zshrc
+git clone https://github.com/allvot/gauge.git \
+  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/gauge
+# then add gauge to plugins=(...) in ~/.zshrc
 ```
 
-**zinit** — `zinit light allvot/git-pr-prompt`
+**zinit** — `zinit light allvot/gauge`
 
-**antidote / zplug** — add `allvot/git-pr-prompt` to your plugin list.
+**antidote / zplug** — add `allvot/gauge` to your plugin list.
 
 ## Configuration
 
@@ -125,30 +128,30 @@ Set any of these **before** sourcing the plugin. Defaults shown.
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `ZGP_SYMBOL_SET` | `auto` | `auto` / `nerdfont` / `minimal` / `emoji` / `github` |
-| `ZGP_HAS_NERDFONT` | *detected* | Force detection: `1` yes, `0` no |
-| `ZGP_SHOW_REVIEW_PENDING` | `1` | Show the "awaiting review" icon |
-| `ZGP_PR_ENABLED` | `1` | Set `0` to disable all `gh` queries |
-| `ZGP_PR_CACHE_TTL` | `30` | Seconds before a cached PR answer is refreshed |
-| `ZGP_PR_CACHE_DIR` | `$TMPDIR/git-pr-prompt-cache` | Cache location |
-| `ZGP_ASYNC_REDRAW` | `1` | Redraw the prompt when PR data lands |
-| `ZGP_SET_PROMPT` | `1` | Set `0` to keep your own `PROMPT` (see below) |
-| `ZGP_PROMPT_NEWLINE` | `1` | Cursor on its own line below the status |
-| `ZGP_SHOW_USER` | `auto` | `auto` = over SSH or as root only; `1` always, `0` never |
-| `ZGP_FLAG_COLORS` | `1` | Color each local flag by meaning, not all as one |
-| `ZGP_GROUP_STYLE` | `separator` | `separator` = dim `│` between groups; `parens` = `(branch flags)` |
-| `ZGP_TITLE` | `1` | Set the terminal/tab title to `repo:branch` |
-| `ZGP_BIND_CLEAR` | `1` | Bind `^L` to clear scrollback and redraw in full |
-| `ZGP_SHOW_STASH` | `1` | Show the `≡n` stash counter |
-| `ZGP_SHOW_UNTRACKED` | `1` | Show the `?` untracked marker |
-| `ZGP_SKIP_BRANCHES` | `(main master production)` | Branches never queried for a PR |
+| `GAUGE_SYMBOL_SET` | `auto` | `auto` / `nerdfont` / `minimal` / `emoji` / `github` |
+| `GAUGE_HAS_NERDFONT` | *detected* | Force detection: `1` yes, `0` no |
+| `GAUGE_SHOW_REVIEW_PENDING` | `1` | Show the "awaiting review" icon |
+| `GAUGE_PR_ENABLED` | `1` | Set `0` to disable all `gh` queries |
+| `GAUGE_PR_CACHE_TTL` | `30` | Seconds before a cached PR answer is refreshed |
+| `GAUGE_PR_CACHE_DIR` | `$TMPDIR/gauge-cache` | Cache location |
+| `GAUGE_ASYNC_REDRAW` | `1` | Redraw the prompt when PR data lands |
+| `GAUGE_SET_PROMPT` | `1` | Set `0` to keep your own `PROMPT` (see below) |
+| `GAUGE_PROMPT_NEWLINE` | `1` | Cursor on its own line below the status |
+| `GAUGE_SHOW_USER` | `auto` | `auto` = over SSH or as root only; `1` always, `0` never |
+| `GAUGE_FLAG_COLORS` | `1` | Color each local flag by meaning, not all as one |
+| `GAUGE_GROUP_STYLE` | `separator` | `separator` = dim `│` between groups; `parens` = `(branch flags)` |
+| `GAUGE_TITLE` | `1` | Set the terminal/tab title to `repo:branch` |
+| `GAUGE_BIND_CLEAR` | `1` | Bind `^L` to clear scrollback and redraw in full |
+| `GAUGE_SHOW_STASH` | `1` | Show the `≡n` stash counter |
+| `GAUGE_SHOW_UNTRACKED` | `1` | Show the `?` untracked marker |
+| `GAUGE_SKIP_BRANCHES` | `(main master production)` | Branches never queried for a PR |
 
 Symbols and colors are associative arrays — override individual keys only:
 
 ```zsh
-typeset -A ZGP_SYMBOLS=(pr_open '●' pr_merged '✔')
-typeset -A ZGP_COLORS=(branch cyan flags 214)
-source ~/.zsh/git-pr-prompt/git-pr-prompt.plugin.zsh
+typeset -A GAUGE_SYMBOLS=(pr_open '●' pr_merged '✔')
+typeset -A GAUGE_COLORS=(branch cyan flags 214)
+source ~/.zsh/gauge/gauge.plugin.zsh
 ```
 
 Colors accept anything zsh's `%F{...}` accepts: names (`red`, `cyan`) or
@@ -156,13 +159,13 @@ Colors accept anything zsh's `%F{...}` accepts: names (`red`, `cyan`) or
 
 ### Using your own PROMPT
 
-The git segment is exported as `$ZGP_GIT_INFO`, already colored and refreshed on
+The git segment is exported as `$GAUGE_GIT_INFO`, already colored and refreshed on
 every `precmd`. Drop it wherever you like:
 
 ```zsh
-ZGP_SET_PROMPT=0
-source ~/.zsh/git-pr-prompt/git-pr-prompt.plugin.zsh
-PROMPT='%F{green}%n@%m%f %F{blue}%~%f${ZGP_GIT_INFO}
+GAUGE_SET_PROMPT=0
+source ~/.zsh/gauge/gauge.plugin.zsh
+PROMPT='%F{green}%n@%m%f %F{blue}%~%f${GAUGE_GIT_INFO}
 ❯ '
 ```
 
@@ -176,10 +179,10 @@ so with a two-line prompt you lose the path, branch and PR state.
 
 Two defenses, both on by default:
 
-- **The title.** `ZGP_TITLE=1` puts `repo:branch` in the window and tab title,
+- **The title.** `GAUGE_TITLE=1` puts `repo:branch` in the window and tab title,
   where no clear can touch it. Works in every terminal and costs nothing
   visually.
-- **`^L`.** The plugin binds it to `zgp-clear-screen`, which drops the scrollback
+- **`^L`.** The plugin binds it to `gauge-clear-screen`, which drops the scrollback
   (`\e[3J`, the part ⌘K does that plain `^L` doesn't) and then redraws *every*
   prompt line. Same result as ⌘K, context intact. If your `^L` is already bound
   to something other than the stock widget, the plugin leaves it alone.
@@ -197,20 +200,20 @@ use `^L`.
 
 ## Commands
 
-- **`zgp-legend`** — print every symbol the prompt can show and what it means,
+- **`gauge-legend`** — print every symbol the prompt can show and what it means,
   as a table. Reflects your *live* configuration: the resolved preset, your
   colors, and anything switched off. Forgot what a glyph means? This is the
   answer.
 
   ```
-  zgp-legend            symbols and meanings, grouped
-  zgp-legend --keys     also the ZGP_SYMBOLS key to override
-  zgp-legend --codes    also the Unicode codepoint
-  zgp-legend --all      all four presets side by side
+  gauge-legend            symbols and meanings, grouped
+  gauge-legend --keys     also the GAUGE_SYMBOLS key to override
+  gauge-legend --codes    also the Unicode codepoint
+  gauge-legend --all      all four presets side by side
   ```
 
   ```
-    git-pr-prompt  preset: nerdfont (auto — Nerd Font detected)
+    gauge  preset: nerdfont (auto — Nerd Font detected)
     ~/repo │  feature/x │   2 │  
 
     Pull request
@@ -225,10 +228,10 @@ use `^L`.
        awaiting review               review_pending    U+F441
   ```
 
-- `zgp-pr-cache-clear` — drop every cached PR answer; useful right after
+- `gauge-pr-cache-clear` — drop every cached PR answer; useful right after
   opening, approving, or merging a PR if you don't want to wait out the TTL.
-- `zgp-font-check` — re-run Nerd Font detection and print sample glyphs. Run it
-  after installing a font or changing your terminal font. `zgp-font-check --yes`
+- `gauge-font-check` — re-run Nerd Font detection and print sample glyphs. Run it
+  after installing a font or changing your terminal font. `gauge-font-check --yes`
   / `--no` overrides the guess permanently.
 
 ## Picking different glyphs
@@ -255,13 +258,13 @@ zsh tools/glyphs.zsh --what        # →  U+F418  oct-git_branch
 Then override just the keys you want, before sourcing the plugin:
 
 ```zsh
-typeset -A ZGP_SYMBOLS=(
+typeset -A GAUGE_SYMBOLS=(
   pr_open   $'\uea64'   # cod-git_pull_request  — VS Code's take
   pr_draft  $'\uebdb'   # cod-git_pull_request_draft
   pr_merged $'\ueafe'   # cod-git_merge
   pr_closed $'\uebda'   # cod-git_pull_request_closed
 )
-source ~/.zsh/git-pr-prompt/git-pr-prompt.plugin.zsh
+source ~/.zsh/gauge/gauge.plugin.zsh
 ```
 
 Overridable keys: `pr_open` `pr_draft` `pr_merged` `pr_closed`
@@ -274,7 +277,7 @@ Overridable keys: `pr_open` `pr_draft` `pr_merged` `pr_closed`
    `git` calls for the flag string. No network.
 2. The PR segment is read straight from a per-repo-and-branch cache file, so the
    prompt is drawn immediately even on a cold cache.
-3. If the cache entry is older than `ZGP_PR_CACHE_TTL`, a disowned background
+3. If the cache entry is older than `GAUGE_PR_CACHE_TTL`, a disowned background
    job runs `gh pr view --json state,isDraft,reviewDecision`, writes the
    rendered segment atomically, and sends `SIGUSR1` to the shell, which triggers
    `zle reset-prompt`.
@@ -285,7 +288,7 @@ the same repo don't stampede the GitHub API.
 ## Troubleshooting
 
 **No PR icon appears.** Check `gh auth status`, and that the branch isn't in
-`ZGP_SKIP_BRANCHES`. Then verify the query directly:
+`GAUGE_SKIP_BRANCHES`. Then verify the query directly:
 
 ```bash
 gh pr view "$(git branch --show-current)" --json state,isDraft,reviewDecision
@@ -310,15 +313,15 @@ long name, which renders some glyphs and drops others. Use the short name:
 python3 tools/font-coverage.py --names ~/Library/Fonts/YourFont.ttf
 ```
 
-To give up on glyphs entirely, `zgp-font-check --no` pins the geometric set;
+To give up on glyphs entirely, `gauge-font-check --no` pins the geometric set;
 then `exec zsh`.
 
 **Prompt feels slow.** The git flag calls are the only synchronous work. In very
-large repos, `ZGP_SHOW_UNTRACKED=0` is usually the biggest win.
+large repos, `GAUGE_SHOW_UNTRACKED=0` is usually the biggest win.
 
 **Prompt doesn't refresh on its own.** Something else in your config may already
 define `TRAPUSR1`; the plugin deliberately does not override it. Either remove
-that handler or set `ZGP_ASYNC_REDRAW=0` and accept a one-prompt lag.
+that handler or set `GAUGE_ASYNC_REDRAW=0` and accept a one-prompt lag.
 
 ## License
 

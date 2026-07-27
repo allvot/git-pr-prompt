@@ -2,7 +2,7 @@
 # Also the backstop preset: it fills in any key another preset left undefined,
 # so every key must be present here.
 
-_zgp_fill ZGP_SYMBOLS \
+_gauge_fill GAUGE_SYMBOLS \
   dirty            '*'  \
   staged           '+'  \
   untracked        '?'  \
@@ -20,7 +20,7 @@ _zgp_fill ZGP_SYMBOLS \
   separator        '│'  \
   prompt_char      '❯'
 
-_zgp_fill ZGP_COLORS \
+_gauge_fill GAUGE_COLORS \
   user             green    \
   user_root        red      \
   path             blue     \

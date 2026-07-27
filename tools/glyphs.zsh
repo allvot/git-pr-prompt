@@ -7,13 +7,13 @@
 #
 # Data is bundled in data/glyph-catalog.tsv (generated from the Nerd Fonts
 # glyphnames.json index), so this works offline. Every glyph needs a patched
-# font to render — if you see boxes, run `zgp-font-check`.
+# font to render — if you see boxes, run `gauge-font-check`.
 
-_ZGP_GLYPHS_ROOT="${0:A:h:h}"   # captured at file scope; $0 is the script path
+_GAUGE_GLYPHS_ROOT="${0:A:h:h}"   # captured at file scope; $0 is the script path
 
 # Which codepoint the nerdfont preset uses for each prompt symbol — powers the
 # "→ used by this prompt as …" line in `--what`.
-typeset -gA _ZGP_USED_BY=(
+typeset -gA _GAUGE_USED_BY=(
   pr_open          F407    pr_draft         F4DD
   pr_merged        F419    pr_closed        F4DC
   review_approved  F4A4    review_changes   F52F
@@ -24,8 +24,8 @@ typeset -gA _ZGP_USED_BY=(
   branch_prefix    F418
 )
 
-_zgp_glyphs_main() {
-  local catalog="$_ZGP_GLYPHS_ROOT/data/glyph-catalog.tsv"
+_gauge_glyphs_main() {
+  local catalog="$_GAUGE_GLYPHS_ROOT/data/glyph-catalog.tsv"
   [[ -r $catalog ]] || { print -u2 "missing $catalog"; return 1 }
 
   local -A family=(
@@ -72,8 +72,8 @@ _zgp_glyphs_main() {
 
     # Is it one the prompt actually uses?
     local k
-    for k in ${(k)_ZGP_USED_BY}; do
-      [[ ${_ZGP_USED_BY[$k]} == "$code" ]] &&
+    for k in ${(k)_GAUGE_USED_BY}; do
+      [[ ${_GAUGE_USED_BY[$k]} == "$code" ]] &&
         print -P -- "  → used by this prompt as %B${k}%b"
     done
     return 0
@@ -116,9 +116,9 @@ _zgp_glyphs_main() {
 
   print -P -- ""
   print -P -- "%B${shown} glyphs.%b Override any prompt symbol in ~/.zshrc, before sourcing:"
-  print -P -- "  %F{cyan}typeset -A ZGP_SYMBOLS=(pr_open \$'\\\\uf407' pr_merged \$'\\\\uf419')%f"
+  print -P -- "  %F{cyan}typeset -A GAUGE_SYMBOLS=(pr_open \$'\\\\uf407' pr_merged \$'\\\\uf419')%f"
   print -P -- ""
   print -P -- "Keys: %F{242}${keys}%f"
 }
 
-_zgp_glyphs_main "$@"
+_gauge_glyphs_main "$@"
