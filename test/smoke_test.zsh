@@ -85,6 +85,60 @@ check "closed"          '⊘' "$(_zgp_pr_render CLOSED false '')"
   { print -- "  FAIL draft should not show the review-pending icon"; FAILED=1 } ||
   print -- "  ok   draft hides review-pending icon"
 
+print -- "\nper-flag colors"
+# `*+? ↑2 ≡1` in one color has to be read; colored per meaning it can be
+# recognised without reading. Colors stay as literal %F{...} here — PROMPT
+# expands them later.
+cd "$tmp"
+git init -q colors
+cd colors
+git config user.email t@example.com
+git config user.name  Test
+print -- one > tracked.txt
+git add tracked.txt
+git commit -qm init
+print -- two >> tracked.txt      # unstaged change
+print -- new > staged.txt
+git add staged.txt               # staged change
+print -- loose > loose.txt       # untracked
+
+_zgp_precmd
+check "unstaged is yellow"  '%F{yellow}*'  "$ZGP_GIT_INFO"
+check "staged is green"     '%F{green}+'   "$ZGP_GIT_INFO"
+check "untracked is red"    '%F{red}?'     "$ZGP_GIT_INFO"
+
+# Upstream and stash flags never coexist with the above in one fixture, so test
+# the shared helper they all go through.
+check "ahead is cyan"       '%F{cyan}↑2'   "$(_zgp_flag ahead '↑2')"
+check "behind is cyan"      '%F{cyan}↓1'   "$(_zgp_flag behind '↓1')"
+check "stash is dim"        '%F{242}≡1'    "$(_zgp_flag stash '≡1')"
+
+out=$(zsh -c "cd '$tmp/colors'
+  ZGP_FLAG_COLORS=0 ZGP_PR_ENABLED=0 ZGP_SYMBOL_SET=minimal ZGP_TITLE=0
+  source '$ROOT/git-pr-prompt.plugin.zsh'
+  print -r -- \"\$(_zgp_local_status)\"")
+check "=0 uses one color for all"  '%F{yellow}*+?'  "$out"
+[[ $out == *'%F{green}'* || $out == *'%F{red}'* ]] &&
+  { print -- "  FAIL ZGP_FLAG_COLORS=0 still colored flags individually"; FAILED=1 } ||
+  print -- "  ok   =0 emits no per-flag colors"
+
+# The legend must agree with the prompt, so it can't hardcode the `flags` color.
+legend_flags() {   # raw, not cat -v: that would mangle the multibyte symbols
+  zsh -c "$* ZGP_PR_ENABLED=1 ZGP_SYMBOL_SET=minimal ZGP_TITLE=0
+    source '$ROOT/git-pr-prompt.plugin.zsh'
+    zgp-legend --keys" 2>&1
+}
+out=$(legend_flags)
+check "legend still lists the flags" 'untracked'          "$out"
+check "legend tints untracked red"   $'\e[31m?'            "$out"
+check "legend dims the stash"        $'\e[38;5;242m≡'      "$out"
+
+out=$(legend_flags ZGP_FLAG_COLORS=0)
+check "=0 legend falls back to yellow" $'\e[33m?' "$out"
+[[ $out == *$'\e[31m?'* ]] &&
+  { print -- "  FAIL legend showed per-flag colors with ZGP_FLAG_COLORS=0"; FAILED=1 } ||
+  print -- "  ok   =0 legend matches the monochrome prompt"
+
 print -- "\nterminal title carries the repo context"
 # ⌘K in Tabby and Ghostty keeps only the cursor row, so a two-line prompt loses
 # its status line. The title survives every kind of clear.

@@ -68,13 +68,18 @@ detection).
 `nerdfont` also restyles the local flags ( modified,  staged,  untracked,
  ahead,  behind,  stashed). The other presets share these:
 
-| Symbol | Meaning |
-|--------|---------|
-| `*` | unstaged changes to tracked files |
-| `+` | staged changes |
-| `?` | untracked files |
-| `↑n` / `↓n` | commits ahead of / behind upstream |
-| `≡n` | stash entries |
+| Symbol | Color | Meaning |
+|--------|-------|---------|
+| `*` | yellow | unstaged changes to tracked files |
+| `+` | green | staged changes |
+| `?` | red | untracked files |
+| `↑n` / `↓n` | cyan | commits ahead of / behind upstream |
+| `≡n` | dim | stash entries |
+
+Each flag is colored by what it *means* — work in progress, staged and ready,
+not tracked, remote-related, background — so a run like `*+? ↑2 ≡1` is
+recognised at a glance instead of read. `ZGP_FLAG_COLORS=0` puts them all back
+in one color (`ZGP_COLORS[flags]`).
 
 ## Requirements
 
@@ -127,6 +132,7 @@ Set any of these **before** sourcing the plugin. Defaults shown.
 | `ZGP_SET_PROMPT` | `1` | Set `0` to keep your own `PROMPT` (see below) |
 | `ZGP_PROMPT_NEWLINE` | `1` | Cursor on its own line below the status |
 | `ZGP_SHOW_USER` | `auto` | `auto` = over SSH or as root only; `1` always, `0` never |
+| `ZGP_FLAG_COLORS` | `1` | Color each local flag by meaning, not all as one |
 | `ZGP_TITLE` | `1` | Set the terminal/tab title to `repo:branch` |
 | `ZGP_BIND_CLEAR` | `1` | Bind `^L` to clear scrollback and redraw in full |
 | `ZGP_SHOW_STASH` | `1` | Show the `≡n` stash counter |

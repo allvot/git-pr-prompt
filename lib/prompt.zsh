@@ -12,7 +12,7 @@ _zgp_git_segment() {
   pr=$(_zgp_pr_status "$branch")
 
   out=" $(_zgp_color branch "(${ZGP_SYMBOLS[branch_prefix]}${branch}")"
-  [[ -n $flags ]] && out+=$(_zgp_color flags " ${flags}")
+  [[ -n $flags ]] && out+=" ${flags}"   # already colored, per flag or as a run
   out+=$(_zgp_color branch ")")
   [[ -n $pr ]] && out+=" ${pr}"
 

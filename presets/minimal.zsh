@@ -23,6 +23,12 @@ _zgp_fill ZGP_COLORS \
   user             green    \
   user_root        red      \
   path             blue     \
+  dirty            yellow   \
+  staged           green    \
+  untracked        red      \
+  ahead            cyan     \
+  behind           cyan     \
+  stash            242      \
   branch           magenta  \
   flags            yellow   \
   prompt_char      yellow   \

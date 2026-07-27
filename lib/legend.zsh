@@ -31,8 +31,9 @@ _zgp_legend_row() {
 
   local color_key=$key
   case $key in
-    dirty|staged|untracked|ahead|behind|stash) color_key=flags ;;
-    branch_prefix)                             color_key=branch ;;
+    dirty|staged|untracked|ahead|behind|stash)
+      (( ZGP_FLAG_COLORS )) || color_key=flags ;;   # monochrome mode shares one
+    branch_prefix) color_key=branch ;;
   esac
 
   local pad=$(( 4 - $(_zgp_width "$sym") ))
@@ -82,7 +83,8 @@ zgp-legend() {
 
   # A live sample so the symbols have context.
   local sample="  $(_zgp_color path '~/repo') $(_zgp_color branch "(${ZGP_SYMBOLS[branch_prefix]}feature/x")"
-  sample+="$(_zgp_color flags " ${ZGP_SYMBOLS[dirty]}${ZGP_SYMBOLS[staged]} ${ZGP_SYMBOLS[ahead]}2")"
+  sample+=" $(_zgp_flag dirty "${ZGP_SYMBOLS[dirty]}")$(_zgp_flag staged "${ZGP_SYMBOLS[staged]}")"
+  sample+=" $(_zgp_flag ahead "${ZGP_SYMBOLS[ahead]}2")"
   sample+="$(_zgp_color branch ')') $(_zgp_pr_render OPEN false APPROVED)"
   sample+=" $(_zgp_color prompt_char "${ZGP_SYMBOLS[prompt_char]}")"
   print -P -- "$sample"
