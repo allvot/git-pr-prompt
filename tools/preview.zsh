@@ -34,8 +34,8 @@ if (( $# )); then
     [[ $f[3] == '"' ]] && f[3]=''
     icon=$(_gauge_pr_render "$f[1]" "$f[2]" "$f[3]")
 
-    line="  $(_gauge_color path '~/code/underwriting')"
-    line+="$(_gauge_color branch "(${GAUGE_SYMBOLS[branch_prefix]}PRE-1470")"
+    line="  $(_gauge_color path '~/dev/acme')"
+    line+="$(_gauge_color branch "(${GAUGE_SYMBOLS[branch_prefix]}feature/login")"
     line+="$(_gauge_color flags ' *+? ↑2 ≡1')"
     line+="$(_gauge_color branch ')')"
     line+=" ${icon} $(_gauge_color prompt_char "${GAUGE_SYMBOLS[prompt_char]}")"

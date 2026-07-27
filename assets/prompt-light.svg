@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="429" height="68" viewBox="0 0 429 68" role="img" aria-label="gauge: path, branch, working-tree flags, PR state">
+<rect width="429" height="68" rx="8" fill="#ffffff"/>
+<text xml:space="preserve" font-family="'JetBrainsMono Nerd Font Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15px" fill="#24292f">
+<tspan x="12.0" y="33" fill="#0969da">~/dev/acme</tspan>
+<tspan x="102.0" y="33"> </tspan>
+<tspan x="111.0" y="33" fill="#6c6c6c">│</tspan>
+<tspan x="120.0" y="33"> </tspan>
+<tspan x="129.0" y="33" fill="#8250df">feature/login</tspan>
+<tspan x="246.0" y="33"> </tspan>
+<tspan x="255.0" y="33" fill="#6c6c6c">│</tspan>
+<tspan x="264.0" y="33"> </tspan>
+<tspan x="273.0" y="33" fill="#9a6700">*</tspan>
+<tspan x="282.0" y="33" fill="#1a7f37">+</tspan>
+<tspan x="291.0" y="33" fill="#cf222e">?</tspan>
+<tspan x="300.0" y="33"> </tspan>
+<tspan x="309.0" y="33" fill="#1b7c83">↑2</tspan>
+<tspan x="327.0" y="33"> </tspan>
+<tspan x="336.0" y="33" fill="#6c6c6c">≡1</tspan>
+<tspan x="354.0" y="33"> </tspan>
+<tspan x="363.0" y="33" fill="#6c6c6c">│</tspan>
+<tspan x="372.0" y="33"> </tspan>
+<tspan x="381.0" y="33" fill="#1a7f37">⊙</tspan>
+<tspan x="390.0" y="33"> </tspan>
+<tspan x="399.0" y="33" fill="#1a7f37">✓</tspan>
+<tspan x="12.0" y="54" fill="#9a6700">❯</tspan>
+<tspan x="21.0" y="54"> git commit --amend</tspan>
+</text>
+</svg>

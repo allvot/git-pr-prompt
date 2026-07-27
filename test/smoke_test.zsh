@@ -423,6 +423,43 @@ out=$(zsh -c "GAUGE_PR_ENABLED=0 GAUGE_SHOW_STASH=0
 check "marks disabled PR lookups" 'GAUGE_PR_ENABLED=0' "$out"
 check "marks a hidden flag"       'GAUGE_SHOW_STASH=0' "$out"
 
+print -- "\nREADME images match the code"
+# The SVGs in assets/ are generated from the prompt's own renderers. If a color
+# or a symbol changes and the images aren't regenerated, the README lies — so
+# regenerate into a temp file and diff.
+if (( $+commands[python3] )); then
+  for mode in prompt states; do
+    for theme in dark light; do
+      case $mode in
+        prompt) title="gauge: path, branch, working-tree flags, PR state" ;;
+        states) title="gauge: every pull request state" ;;
+      esac
+      zsh "$ROOT/tools/samples.zsh" $mode \
+        | python3 "$ROOT/tools/ansi2svg.py" --theme $theme --title "$title" \
+        > "$tmp/$mode-$theme.svg" 2>/dev/null
+      if diff -q "$tmp/$mode-$theme.svg" "$ROOT/assets/$mode-$theme.svg" >/dev/null 2>&1; then
+        print -- "  ok   assets/$mode-$theme.svg is current"
+      else
+        print -- "  FAIL assets/$mode-$theme.svg is stale — regenerate it:"
+        print -- "       zsh tools/samples.zsh $mode | python3 tools/ansi2svg.py --theme $theme --title '$title' > assets/$mode-$theme.svg"
+        FAILED=1
+      fi
+    done
+  done
+
+  # Colors must survive the ANSI -> SVG conversion, not just be present.
+  out=$(zsh "$ROOT/tools/samples.zsh" prompt | python3 "$ROOT/tools/ansi2svg.py" --theme dark)
+  check "SVG is well-formed enough"  '</svg>'   "$out"
+  check "path keeps its blue"        '#58a6ff'  "$out"
+  check "untracked keeps its red"    '#ff7b72'  "$out"
+  check "stash stays dim (242)"      '#6c6c6c'  "$out"
+  [[ $out == *$'\e'* ]] &&
+    { print -- "  FAIL raw escape survived into the SVG"; FAILED=1 } ||
+    print -- "  ok   no raw escapes left in the SVG"
+else
+  print -- "  skip python3 not found, cannot check the README images"
+fi
+
 print -- ""
 if (( FAILED )); then
   print -- "FAILED"

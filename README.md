@@ -11,14 +11,14 @@ PR data comes from the [`gh` CLI](https://cli.github.com/), is fetched in a
 background job, cached on disk, and painted into the prompt the moment it
 arrives (the prompt redraws itself via `SIGUSR1`).
 
-```
-~/codebase/underwriting │ PRE-1470 │ *+? ↑2 ≡1 │ ⊙ ✓
-❯ git commit --amend
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/prompt-dark.svg">
+  <img alt="~/dev/acme │ feature/login │ *+? ↑2 ≡1 │ ⊙ ✓" src="assets/prompt-light.svg">
+</picture>
 
 Path, branch, working-tree flags, then PR state — here: open and approved. The
 `│` separators are dim, so they mark where each group ends without competing
-with its contents. `GAUGE_GROUP_STYLE=parens` gets you `(PRE-1470 *+? ↑2 ≡1)`
+with its contents. `GAUGE_GROUP_STYLE=parens` gets you `(feature/login *+? ↑2 ≡1)`
 instead, and `GAUGE_SYMBOLS[separator]` changes the character.
 
 Two deliberate omissions keep the line to what you can't already see:
@@ -35,6 +35,14 @@ With a Nerd Font installed you get GitHub's real Octicon glyphs instead —
 Detection is automatic; see [Symbols](#symbols).
 
 ## Symbols
+
+Every pull request state, in the colors the prompt actually uses — open, draft,
+awaiting review, approved, changes requested, merged, closed:
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/states-dark.svg">
+  <img alt="The seven PR states: open, draft, awaiting review, approved, changes requested, merged, closed" src="assets/states-light.svg">
+</picture>
 
 The default is **`GAUGE_SYMBOL_SET=auto`**: real GitHub icon glyphs if your
 terminal has a Nerd Font, and the geometric set if it doesn't — so it looks
@@ -322,6 +330,32 @@ large repos, `GAUGE_SHOW_UNTRACKED=0` is usually the biggest win.
 **Prompt doesn't refresh on its own.** Something else in your config may already
 define `TRAPUSR1`; the plugin deliberately does not override it. Either remove
 that handler or set `GAUGE_ASYNC_REDRAW=0` and accept a one-prompt lag.
+
+## Development
+
+```bash
+zsh test/smoke_test.zsh          # the whole suite, no network, no ~/.zshrc
+zsh tools/preview.zsh            # every preset, in your own font
+zsh tools/samples.zsh states     # the README examples, in your terminal
+```
+
+The images in `assets/` are generated from the prompt's own renderers, so they
+can't drift from the code — nothing in `tools/samples.zsh` hardcodes a layout or
+a color. GitHub strips ANSI from code blocks and sanitizes inline `style`, so a
+colored example has to be an image; SVG keeps it diffable instead of a
+screenshot. Regenerate after any color or symbol change:
+
+```bash
+for theme in dark light; do
+  zsh tools/samples.zsh prompt | python3 tools/ansi2svg.py --theme $theme \
+    --title 'gauge: path, branch, working-tree flags, PR state' > assets/prompt-$theme.svg
+  zsh tools/samples.zsh states | python3 tools/ansi2svg.py --theme $theme \
+    --title 'gauge: every pull request state' > assets/states-$theme.svg
+done
+```
+
+The test suite regenerates them into a temp file and diffs, so a stale image
+fails the build rather than quietly misleading readers.
 
 ## License
 
