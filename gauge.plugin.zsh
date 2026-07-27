@@ -13,6 +13,7 @@ typeset -g GAUGE_ROOT="${0:A:h}"
 # --- Options (only defaults; never clobber what the user already set) -------
 
 : ${GAUGE_SYMBOL_SET:=auto}                  # auto | nerdfont | minimal | emoji | github
+: ${GAUGE_THEME:=default}                    # colors: see themes/
 : ${GAUGE_PR_ENABLED:=1}                                         # query gh at all
 : ${GAUGE_PR_CACHE_TTL:=30}                                      # seconds
 : ${GAUGE_PR_CACHE_DIR:="${TMPDIR:-/tmp}/gauge-cache"}
@@ -34,9 +35,13 @@ typeset -ga GAUGE_SKIP_BRANCHES
 
 # --- Symbols and colors ----------------------------------------------------
 #
-# Precedence: whatever the user set  >  the selected preset  >  minimal preset.
-# So `typeset -A GAUGE_SYMBOLS=(pr_open '●')` before sourcing overrides one key
-# and leaves the rest of the preset intact.
+# Two independent axes. `presets/` sets GAUGE_SYMBOLS (what the glyphs are),
+# `themes/` sets GAUGE_COLORS (what color they take), and any combination works.
+#
+# Precedence for both: whatever the user set  >  the selected preset or theme  >
+# the backstop (presets/minimal.zsh, themes/default.zsh). So
+# `typeset -A GAUGE_SYMBOLS=(pr_open '●')` before sourcing overrides one key and
+# leaves the rest intact.
 
 typeset -gA GAUGE_SYMBOLS GAUGE_COLORS
 
@@ -74,6 +79,11 @@ fi
 
 # Backstop: minimal fills any key the chosen preset left undefined.
 source "$GAUGE_ROOT/presets/minimal.zsh"
+
+# Colors. After the presets, so a preset that must not be tinted (emoji, github)
+# can pin those keys to `none` and have that survive any theme.
+source "$GAUGE_ROOT/lib/theme.zsh"
+_gauge_load_theme
 
 # --- Load the pieces -------------------------------------------------------
 

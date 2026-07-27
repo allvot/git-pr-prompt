@@ -423,6 +423,84 @@ out=$(zsh -c "GAUGE_PR_ENABLED=0 GAUGE_SHOW_STASH=0
 check "marks disabled PR lookups" 'GAUGE_PR_ENABLED=0' "$out"
 check "marks a hidden flag"       'GAUGE_SHOW_STASH=0' "$out"
 
+print -- "\ncolor themes"
+# Colors are their own axis now: themes/ holds palettes, presets/ holds glyphs,
+# and the two compose. A theme declares 7 semantic roles; lib/theme.zsh maps
+# roles onto the ~20 GAUGE_COLORS keys so no theme can miss one.
+theme_dump() {   # theme_dump [env assignments...] -> key=color lines
+  zsh -c "$* GAUGE_PR_ENABLED=0 GAUGE_TITLE=0
+    source '$ROOT/gauge.plugin.zsh' 2>&1
+    print -r -- \"theme=\$GAUGE_ACTIVE_THEME\"
+    for k in \${(ko)GAUGE_COLORS}; do print -r -- \"\$k=\${GAUGE_COLORS[\$k]}\"; done"
+}
+
+out=$(theme_dump)
+check "default theme is active"   'theme=default'  "$out"
+# The default theme must reproduce today's colors exactly — same named colors, so
+# the prompt still follows the terminal's own scheme.
+check "path stays blue"           'path=blue'      "$out"
+check "branch stays magenta"      'branch=magenta' "$out"
+check "staged stays green"        'staged=green'   "$out"
+check "untracked stays red"       'untracked=red'  "$out"
+check "dirty stays yellow"        'dirty=yellow'   "$out"
+check "ahead stays cyan"          'ahead=cyan'     "$out"
+check "stash stays dim"           'stash=242'      "$out"
+check "separator stays dim"       'separator=242'  "$out"
+check "prompt char stays yellow"  'prompt_char=yellow' "$out"
+check "merged stays magenta"      'pr_merged=magenta'  "$out"
+check "root stays red"            'user_root=red'  "$out"
+
+# Every key the prompt colors must be defined, or a segment renders untinted.
+missing=()
+for k in user user_root path branch separator flags prompt_char dirty staged \
+         untracked ahead behind stash pr_open pr_draft pr_merged pr_closed \
+         review_approved review_changes review_pending; do
+  [[ $out == *"
+${k}="* ]] || missing+=$k
+done
+if (( $#missing )); then
+  print -- "  FAIL default theme leaves keys undefined: ${missing[*]}"; FAILED=1
+else
+  print -- "  ok   default theme defines every color key"
+fi
+
+out=$(theme_dump GAUGE_THEME=mono)
+check "mono resolves"          'theme=mono' "$out"
+check "mono colors are none"   'path=none'  "$out"
+out=$(zsh -c "GAUGE_THEME=mono GAUGE_PR_ENABLED=0 GAUGE_TITLE=0 GAUGE_SYMBOL_SET=minimal
+  source '$ROOT/gauge.plugin.zsh'
+  print -r -- \"\$(_gauge_pr_render OPEN false APPROVED)|\$PROMPT\"")
+check "mono still renders symbols" '⊙' "$out"
+[[ $out == *'%F'* ]] &&
+  { print -- "  FAIL mono emitted color escapes"; FAILED=1 } ||
+  print -- "  ok   mono emits no color escapes at all"
+
+out=$(theme_dump GAUGE_THEME=nope)
+check "unknown theme warns"          'unknown GAUGE_THEME' "$out"
+check "unknown theme falls back"     'theme=default'       "$out"
+check "and still has every color"    'branch=magenta'      "$out"
+
+out=$(theme_dump "typeset -A GAUGE_COLORS=(branch cyan);")
+check "your color override wins"     'branch=cyan'   "$out"
+check "rest of the theme intact"     'path=blue'     "$out"
+
+out=$(theme_dump "typeset -A GAUGE_PALETTE=(primary red);")
+check "palette role override wins"   'branch=red'    "$out"
+check "unrelated roles untouched"    'staged=green'  "$out"
+
+# Themes and symbol sets are orthogonal: any combination must work.
+out=$(zsh -c "GAUGE_SYMBOL_SET=nerdfont GAUGE_THEME=mono GAUGE_PR_ENABLED=0 GAUGE_TITLE=0
+  source '$ROOT/gauge.plugin.zsh'
+  c=\${GAUGE_SYMBOLS[pr_open]}
+  print -r -- \"\$(( [##16] #c )) \${GAUGE_COLORS[pr_open]}\"")
+check "nerdfont glyph survives"      'F407' "${out:u}"
+check "with the mono theme's color" 'none' "$out"
+
+out=$(zsh -c "GAUGE_PR_ENABLED=1 GAUGE_TITLE=0 GAUGE_SYMBOL_SET=minimal
+  source '$ROOT/gauge.plugin.zsh'
+  gauge-legend" 2>&1)
+check "legend names the theme" 'theme: default' "$out"
+
 print -- "\nREADME images match the code"
 # The SVGs in assets/ are generated from the prompt's own renderers. If a color
 # or a symbol changes and the images aren't regenerated, the README lies — so

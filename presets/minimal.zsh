@@ -1,6 +1,8 @@
 # Preset: minimal — plain Unicode geometry, renders in any monospace font.
 # Also the backstop preset: it fills in any key another preset left undefined,
-# so every key must be present here.
+# so every symbol must be present here.
+#
+# Symbols only. Colors are a separate axis — see themes/ and lib/theme.zsh.
 
 _gauge_fill GAUGE_SYMBOLS \
   dirty            '*'  \
@@ -19,25 +21,3 @@ _gauge_fill GAUGE_SYMBOLS \
   branch_prefix    ''   \
   separator        '│'  \
   prompt_char      '❯'
-
-_gauge_fill GAUGE_COLORS \
-  user             green    \
-  user_root        red      \
-  path             blue     \
-  dirty            yellow   \
-  staged           green    \
-  untracked        red      \
-  ahead            cyan     \
-  behind           cyan     \
-  stash            242      \
-  branch           magenta  \
-  separator        242      \
-  flags            yellow   \
-  prompt_char      yellow   \
-  pr_open          green    \
-  pr_draft         242      \
-  pr_merged        magenta  \
-  pr_closed        red      \
-  review_approved  green    \
-  review_changes   red      \
-  review_pending   242

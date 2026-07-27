@@ -106,6 +106,59 @@ not tracked, remote-related, background — so a run like `*+? ↑2 ≡1` is
 recognised at a glance instead of read. `GAUGE_FLAG_COLORS=0` puts them all back
 in one color (`GAUGE_COLORS[flags]`).
 
+## Themes
+
+Colors are a separate axis from symbols: `presets/` decides what the glyphs
+**are**, `themes/` decides what color they **take**, and any combination
+composes. Nerd Font glyphs in a colorless theme, geometric glyphs in a loud one —
+all valid.
+
+| Theme | What it is |
+|-------|------------|
+| `default` | The terminal's own eight named colors, so the prompt follows whatever scheme you already run |
+| `mono` | No color at all — no escapes emitted. For screen sharing, recordings, e-ink, or letting the prompt recede |
+
+```zsh
+GAUGE_THEME=mono
+source ~/.zsh/gauge/gauge.plugin.zsh
+```
+
+### Writing a theme
+
+A theme doesn't set the twenty-odd `GAUGE_COLORS` keys. It declares **seven
+semantic roles**, and `lib/theme.zsh` maps roles onto keys — so a theme is seven
+lines and can't forget a key:
+
+```zsh
+# themes/nord.zsh
+_gauge_palette \
+  primary   '#88c0d0'   `# branch, merged PR` \
+  secondary '#81a1c1'   `# path` \
+  remote    '#8fbcbb'   `# ahead/behind` \
+  ok        '#a3be8c'   `# staged, approved, open PR` \
+  warn      '#ebcb8b'   `# unstaged, prompt character` \
+  danger    '#bf616a'   `# untracked, changes requested, closed` \
+  muted     '#4c566a'   `# separators, stash, draft`
+```
+
+Hex needs zsh 5.7+ and a truecolor terminal; named colors and 0–255 work
+everywhere. Precedence, highest first:
+
+1. `GAUGE_COLORS[key]` — your explicit per-key override
+2. `GAUGE_PALETTE[role]` — your explicit per-role override
+3. the selected theme
+4. `themes/default.zsh`, the backstop, so every key always resolves
+
+So you can repaint one role without forking a theme:
+
+```zsh
+typeset -A GAUGE_PALETTE=(primary cyan)   # branch and merged PR turn cyan
+```
+
+The `emoji` and `github` presets deliberately pin their own keys to `none`,
+outranking any theme — tinting an emoji, or recoloring GitHub's state circles,
+would destroy the thing that makes them readable.
+
 ## Requirements
 
 - zsh 5.3+
@@ -148,6 +201,7 @@ Set any of these **before** sourcing the plugin. Defaults shown.
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `GAUGE_SYMBOL_SET` | `auto` | `auto` / `nerdfont` / `minimal` / `emoji` / `github` |
+| `GAUGE_THEME` | `default` | Colors: `default` / `mono` (see [Themes](#themes)) |
 | `GAUGE_HAS_NERDFONT` | *detected* | Force detection: `1` yes, `0` no |
 | `GAUGE_SHOW_REVIEW_PENDING` | `1` | Show the "awaiting review" icon |
 | `GAUGE_PR_ENABLED` | `1` | Set `0` to disable all `gh` queries |

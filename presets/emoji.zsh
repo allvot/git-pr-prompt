@@ -20,7 +20,9 @@ _gauge_fill GAUGE_SYMBOLS \
   review_changes   '❌' \
   review_pending   '👀'
 
-# Emoji carry their own color — `none` suppresses the %F{...} wrapper.
+# Emoji carry their own color — `none` suppresses the %F{...} wrapper. Written
+# straight into GAUGE_COLORS rather than as a palette role, so it outranks any
+# theme: tinting an emoji is wrong whatever colors you've chosen.
 _gauge_fill GAUGE_COLORS \
   pr_open          none \
   pr_draft         none \
