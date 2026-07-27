@@ -145,6 +145,27 @@ out=$(zsh -c "typeset -A ZGP_SYMBOLS=(pr_open 'XX')
 check "override applied"        'XX' "$out"
 check "rest of preset intact"   '⊕' "$out"
 
+print -- "\nNerd Font name recognition"
+# Homebrew casks register the SHORT family (nameID 1): "JetBrainsMono NFM".
+# The long "…Nerd Font Mono" spelling is only nameID 16, so both must match.
+for name in 'JetBrainsMono NFM' 'MesloLGS NF' 'JetBrainsMono Nerd Font Mono' \
+            'Hack Nerd Font Mono' 'FiraCode NFP' 'CaskaydiaCove NF'; do
+  if [[ "font: ${name:l}" =~ $_zgp_nerdfont_pattern ]]; then
+    print -- "  ok   recognises '$name'"
+  else
+    print -- "  FAIL did not recognise '$name'"
+    FAILED=1
+  fi
+done
+for name in Monaco Menlo 'SF Mono' 'Fira Code'; do
+  if [[ "font: ${name:l}" =~ $_zgp_nerdfont_pattern ]]; then
+    print -- "  FAIL '$name' is not a Nerd Font but matched"
+    FAILED=1
+  else
+    print -- "  ok   rejects '$name'"
+  fi
+done
+
 print -- "\nzgp-legend"
 # ZGP_PR_ENABLED=1 here: the legend only renders symbols, it never queries gh,
 # so the PR/Review blocks can be checked without touching the network.

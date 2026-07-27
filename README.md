@@ -159,7 +159,7 @@ PROMPT='%F{green}%n@%m%f %F{blue}%~%f${ZGP_GIT_INFO}
 
   ```
     git-pr-prompt  preset: nerdfont (auto — Nerd Font detected)
-    ~/repo ( feature/x  2)  
+    ~/repo ( feature/x  2)
 
     Pull request
        open                          pr_open           U+F407
@@ -239,11 +239,27 @@ the same repo don't stampede the GitHub API.
 gh pr view "$(git branch --show-current)" --json state,isDraft,reviewDecision
 ```
 
-**Boxes (□) or blanks instead of icons.** Font detection guessed wrong. Run
-`zgp-font-check --no` to pin the geometric set, then `exec zsh`. To get the
-glyphs instead, install a patched font
-(`brew install --cask font-jetbrains-mono-nerd-font`), select it in your
-terminal, and run `zgp-font-check`.
+**Boxes (□) or blanks instead of icons — or only *some* glyphs missing.** First
+find out whether the font actually has them:
+
+```bash
+python3 tools/font-coverage.py           # scans installed Nerd Fonts
+```
+
+If it reports every glyph present but your terminal still shows boxes, the
+terminal isn't using that font. The usual cause is the **family name**: Homebrew's
+casks register nameID 1 as the short form, e.g. `JetBrainsMono NFM` (`NF` =
+proportional, `NFM` = mono, `NFP` = propo), while `JetBrainsMono Nerd Font Mono`
+exists only as nameID 16. Terminals that match on nameID 1 — anything built on
+xterm.js, such as Tabby or VS Code — fall back **per character** when given the
+long name, which renders some glyphs and drops others. Use the short name:
+
+```bash
+python3 tools/font-coverage.py --names ~/Library/Fonts/YourFont.ttf
+```
+
+To give up on glyphs entirely, `zgp-font-check --no` pins the geometric set;
+then `exec zsh`.
 
 **Prompt feels slow.** The git flag calls are the only synchronous work. In very
 large repos, `ZGP_SHOW_UNTRACKED=0` is usually the biggest win.

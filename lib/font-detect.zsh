@@ -10,7 +10,12 @@
 : ${ZGP_FONT_CACHE:="${XDG_CACHE_HOME:-$HOME/.cache}/git-pr-prompt/font"}
 
 # Font family names that ship Nerd Font glyphs.
-_zgp_nerdfont_pattern='(nerd[ _-]?font|nerdfont| nf$|nf-|powerline|hack[ _-]?nf|jetbrainsmono nf|meslolgs|sourcecodepro nf|firacode nf|caskaydia)'
+#
+# Note the short forms: Homebrew's font casks register nameID 1 as e.g.
+# "JetBrainsMono NFM" (NF = proportional, NFM = mono, NFP = propo), while the
+# long "JetBrainsMono Nerd Font Mono" only exists as nameID 16. Terminals that
+# match on nameID 1 need the short name, so both spellings must be recognised.
+_zgp_nerdfont_pattern='(nerd[ _-]?font|nerdfont|[ _-]nf[mp]?([ _-]|$)|powerline|meslolgs|caskaydia|symbols nerd)'
 
 _zgp_font_probe() {
   local -a hits
