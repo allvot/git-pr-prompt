@@ -77,7 +77,7 @@ detection).
 **Manual**
 
 ```bash
-git clone https://github.com/<you>/git-pr-prompt.git ~/.zsh/git-pr-prompt
+git clone https://github.com/allvot/git-pr-prompt.git ~/.zsh/git-pr-prompt
 echo 'source ~/.zsh/git-pr-prompt/git-pr-prompt.plugin.zsh' >> ~/.zshrc
 ```
 
@@ -91,14 +91,14 @@ first and appends the `source` line only if it isn't already there:
 **oh-my-zsh**
 
 ```bash
-git clone https://github.com/<you>/git-pr-prompt.git \
+git clone https://github.com/allvot/git-pr-prompt.git \
   ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/git-pr-prompt
 # then add git-pr-prompt to plugins=(...) in ~/.zshrc
 ```
 
-**zinit** — `zinit light <you>/git-pr-prompt`
+**zinit** — `zinit light allvot/git-pr-prompt`
 
-**antidote / zplug** — add `<you>/git-pr-prompt` to your plugin list.
+**antidote / zplug** — add `allvot/git-pr-prompt` to your plugin list.
 
 ## Configuration
 
