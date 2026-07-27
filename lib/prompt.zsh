@@ -2,21 +2,38 @@
 
 typeset -g ZGP_GIT_INFO=""   # rendered git segment, refreshed on every precmd
 
-# Build the git segment: "(branch flags) pr-icons"
+# Join the prompt's groups — branch, working-tree flags, PR state.
+#
+# Default is a dim separator between groups rather than parens around them: a
+# delimiter's job is to mark where a group ends, and it does that better when it
+# isn't the same weight as the branch name it's wrapping. `ZGP_GROUP_STYLE=parens`
+# restores the bracketed form.
+#
+# Takes pre-colored flags/PR text; the branch is colored here.
+_zgp_group_join() {
+  local branch=$1 flags=${2-} pr=${3-} out sep
+  flags=${flags# }        # the run leading with ↑/↓/≡ carries a leading space
+
+  if [[ $ZGP_GROUP_STYLE == parens ]]; then
+    out=" $(_zgp_color branch "(${ZGP_SYMBOLS[branch_prefix]}${branch}")"
+    [[ -n $flags ]] && out+=" ${flags}"
+    out+=$(_zgp_color branch ")")
+    [[ -n $pr ]] && out+=" ${pr}"
+  else
+    sep=" $(_zgp_color separator "${ZGP_SYMBOLS[separator]}") "
+    out="${sep}$(_zgp_color branch "${ZGP_SYMBOLS[branch_prefix]}${branch}")"
+    [[ -n $flags ]] && out+="${sep}${flags}"
+    [[ -n $pr ]]    && out+="${sep}${pr}"
+  fi
+
+  print -r -- "$out"
+}
+
 _zgp_git_segment() {
   local branch=$1
   [[ -n $branch ]] || { print -r -- ""; return }
 
-  local flags pr out
-  flags=$(_zgp_local_status)
-  pr=$(_zgp_pr_status "$branch")
-
-  out=" $(_zgp_color branch "(${ZGP_SYMBOLS[branch_prefix]}${branch}")"
-  [[ -n $flags ]] && out+=" ${flags}"   # already colored, per flag or as a run
-  out+=$(_zgp_color branch ")")
-  [[ -n $pr ]] && out+=" ${pr}"
-
-  print -r -- "$out"
+  _zgp_group_join "$branch" "$(_zgp_local_status)" "$(_zgp_pr_status "$branch")"
 }
 
 _zgp_precmd() {

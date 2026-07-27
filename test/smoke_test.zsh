@@ -85,6 +85,47 @@ check "closed"          '⊘' "$(_zgp_pr_render CLOSED false '')"
   { print -- "  FAIL draft should not show the review-pending icon"; FAILED=1 } ||
   print -- "  ok   draft hides review-pending icon"
 
+print -- "\ngroup separators"
+# Groups are delimited by a dim separator rather than parens, so the delimiters
+# don't compete with the branch name they surround.
+cd "$tmp/repo"
+_zgp_precmd
+check "uses a dim separator" $'%F{242}│' "$ZGP_GIT_INFO"
+[[ $ZGP_GIT_INFO == *'('* || $ZGP_GIT_INFO == *')'* ]] &&
+  { print -- "  FAIL separator style still emitted parens"; FAILED=1 } ||
+  print -- "  ok   no parens in separator style"
+# One separator before the branch, one before the flag run (stash, here).
+seps=( ${(s:│:)ZGP_GIT_INFO} )
+check "one separator per group" '3' "$#seps"   # 2 separators -> 3 fields
+
+out=$(zsh -c "cd '$tmp/repo'
+  ZGP_GROUP_STYLE=parens ZGP_PR_ENABLED=0 ZGP_SYMBOL_SET=minimal ZGP_TITLE=0
+  source '$ROOT/git-pr-prompt.plugin.zsh'
+  _zgp_precmd; print -r -- \"\$ZGP_GIT_INFO\"")
+check "parens style still available" '(feature/thing' "$out"
+check "parens style closes"          ')'              "$out"
+[[ $out == *'│'* ]] &&
+  { print -- "  FAIL parens style leaked a separator"; FAILED=1 } ||
+  print -- "  ok   parens style emits no separator"
+
+out=$(zsh -c "cd '$tmp/repo'
+  typeset -A ZGP_SYMBOLS=(separator '@')
+  ZGP_PR_ENABLED=0 ZGP_SYMBOL_SET=minimal ZGP_TITLE=0
+  source '$ROOT/git-pr-prompt.plugin.zsh'
+  _zgp_precmd; print -r -- \"\$ZGP_GIT_INFO\"")
+check "separator is overridable" '@' "$out"
+
+out=$(zsh -c "cd '$tmp'
+  ZGP_PR_ENABLED=0 ZGP_SYMBOL_SET=minimal ZGP_TITLE=0
+  source '$ROOT/git-pr-prompt.plugin.zsh'
+  _zgp_precmd; print -r -- \"[\$ZGP_GIT_INFO]\"")
+check "no stray separator outside a repo" '[]' "$out"
+
+out=$(zsh -c "ZGP_PR_ENABLED=1 ZGP_SYMBOL_SET=minimal ZGP_TITLE=0
+  source '$ROOT/git-pr-prompt.plugin.zsh'
+  zgp-legend" 2>&1)
+check "legend sample follows the style" '│' "$out"
+
 print -- "\nper-flag colors"
 # `*+? ↑2 ≡1` in one color has to be read; colored per meaning it can be
 # recognised without reading. Colors stay as literal %F{...} here — PROMPT
@@ -287,7 +328,7 @@ for preset in emoji github nerdfont minimal; do
     missing=()
     for k in dirty staged untracked ahead behind stash pr_open pr_draft \
              pr_merged pr_closed review_approved review_changes review_pending \
-             prompt_char; do
+             separator prompt_char; do
       [[ -n \${ZGP_SYMBOLS[\$k]-} ]] || missing+=\$k
     done
     for s in OPEN MERGED CLOSED; do

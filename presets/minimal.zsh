@@ -17,6 +17,7 @@ _zgp_fill ZGP_SYMBOLS \
   review_changes   '✗'  \
   review_pending   '·'  \
   branch_prefix    ''   \
+  separator        '│'  \
   prompt_char      '❯'
 
 _zgp_fill ZGP_COLORS \
@@ -30,6 +31,7 @@ _zgp_fill ZGP_COLORS \
   behind           cyan     \
   stash            242      \
   branch           magenta  \
+  separator        242      \
   flags            yellow   \
   prompt_char      yellow   \
   pr_open          green    \

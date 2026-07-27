@@ -9,11 +9,14 @@ background job, cached on disk, and painted into the prompt the moment it
 arrives (the prompt redraws itself via `SIGUSR1`).
 
 ```
-~/codebase/underwriting (PRE-1470 *+? ↑2 ≡1) ⊙ ✓
+~/codebase/underwriting │ PRE-1470 │ *+? ↑2 ≡1 │ ⊙ ✓
 ❯ git commit --amend
 ```
 
-Path, branch, working-tree flags, then PR state — here: open and approved.
+Path, branch, working-tree flags, then PR state — here: open and approved. The
+`│` separators are dim, so they mark where each group ends without competing
+with its contents. `ZGP_GROUP_STYLE=parens` gets you `(PRE-1470 *+? ↑2 ≡1)`
+instead, and `ZGP_SYMBOLS[separator]` changes the character.
 
 Two deliberate omissions keep the line to what you can't already see:
 
@@ -133,6 +136,7 @@ Set any of these **before** sourcing the plugin. Defaults shown.
 | `ZGP_PROMPT_NEWLINE` | `1` | Cursor on its own line below the status |
 | `ZGP_SHOW_USER` | `auto` | `auto` = over SSH or as root only; `1` always, `0` never |
 | `ZGP_FLAG_COLORS` | `1` | Color each local flag by meaning, not all as one |
+| `ZGP_GROUP_STYLE` | `separator` | `separator` = dim `│` between groups; `parens` = `(branch flags)` |
 | `ZGP_TITLE` | `1` | Set the terminal/tab title to `repo:branch` |
 | `ZGP_BIND_CLEAR` | `1` | Bind `^L` to clear scrollback and redraw in full |
 | `ZGP_SHOW_STASH` | `1` | Show the `≡n` stash counter |
@@ -207,7 +211,7 @@ use `^L`.
 
   ```
     git-pr-prompt  preset: nerdfont (auto — Nerd Font detected)
-    ~/repo ( feature/x  2)
+    ~/repo │  feature/x │   2 │  
 
     Pull request
        open                          pr_open           U+F407
@@ -262,7 +266,7 @@ source ~/.zsh/git-pr-prompt/git-pr-prompt.plugin.zsh
 
 Overridable keys: `pr_open` `pr_draft` `pr_merged` `pr_closed`
 `review_approved` `review_changes` `review_pending` `dirty` `staged`
-`untracked` `ahead` `behind` `stash` `branch_prefix` `prompt_char`.
+`untracked` `ahead` `behind` `stash` `branch_prefix` `separator` `prompt_char`.
 
 ## How it works
 

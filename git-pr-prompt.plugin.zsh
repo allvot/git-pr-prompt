@@ -21,6 +21,7 @@ typeset -g ZGP_ROOT="${0:A:h}"
 : ${ZGP_PROMPT_NEWLINE:=1}
 : ${ZGP_SHOW_USER:=auto}                   # auto (SSH or root only) | 1 | 0
 : ${ZGP_FLAG_COLORS:=1}                    # color each local flag by meaning
+: ${ZGP_GROUP_STYLE:=separator}            # separator | parens
 : ${ZGP_TITLE:=1}                          # set the terminal title to repo:branch
 : ${ZGP_BIND_CLEAR:=1}                     # ^L clears scrollback and redraws in full                                         # install our PROMPT
 : ${ZGP_SHOW_STASH:=1}

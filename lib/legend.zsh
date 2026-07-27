@@ -82,10 +82,12 @@ zgp-legend() {
   print -P -- "  %Bgit-pr-prompt%b  %F{242}${set_note}%f"
 
   # A live sample so the symbols have context.
-  local sample="  $(_zgp_color path '~/repo') $(_zgp_color branch "(${ZGP_SYMBOLS[branch_prefix]}feature/x")"
-  sample+=" $(_zgp_flag dirty "${ZGP_SYMBOLS[dirty]}")$(_zgp_flag staged "${ZGP_SYMBOLS[staged]}")"
-  sample+=" $(_zgp_flag ahead "${ZGP_SYMBOLS[ahead]}2")"
-  sample+="$(_zgp_color branch ')') $(_zgp_pr_render OPEN false APPROVED)"
+  # Built with the real joiner, so the sample can't drift from the prompt.
+  local sample_flags="$(_zgp_flag dirty "${ZGP_SYMBOLS[dirty]}")$(_zgp_flag staged "${ZGP_SYMBOLS[staged]}")"
+  sample_flags+=" $(_zgp_flag ahead "${ZGP_SYMBOLS[ahead]}2")"
+
+  local sample="  $(_zgp_color path '~/repo')"
+  sample+=$(_zgp_group_join 'feature/x' "$sample_flags" "$(_zgp_pr_render OPEN false APPROVED)")
   sample+=" $(_zgp_color prompt_char "${ZGP_SYMBOLS[prompt_char]}")"
   print -P -- "$sample"
 
