@@ -66,8 +66,16 @@ case ${1:-prompt} in
     _sample_line '~/repo' 'main' "$(_gauge_flag stash "${GAUGE_SYMBOLS[stash]}3")" ''
     ;;
 
+  presets)  # every preset side by side — reuses gauge-legend --all, minus its
+            # interactive footer, so the table can't drift from the presets
+    gauge-legend --all \
+      | grep -v 'Switch with GAUGE_SYMBOL_SET' \
+      | awk 'NF { seen = 1 } seen { l[++n] = $0; if (NF) last = n }
+             END { for (i = 1; i <= last; i++) print l[i] }'
+    ;;
+
   *)
-    print -u2 "usage: samples.zsh [prompt|states|flags]"
+    print -u2 "usage: samples.zsh [prompt|states|flags|presets]"
     return 1
     ;;
 esac

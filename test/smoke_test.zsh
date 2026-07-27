@@ -428,11 +428,12 @@ print -- "\nREADME images match the code"
 # or a symbol changes and the images aren't regenerated, the README lies — so
 # regenerate into a temp file and diff.
 if (( $+commands[python3] )); then
-  for mode in prompt states; do
+  for mode in prompt states presets; do
     for theme in dark light; do
       case $mode in
-        prompt) title="gauge: path, branch, working-tree flags, PR state" ;;
-        states) title="gauge: every pull request state" ;;
+        prompt)  title="gauge: path, branch, working-tree flags, PR state" ;;
+        states)  title="gauge: every pull request state" ;;
+        presets) title="Every symbol in every preset: nerdfont, minimal, emoji, github" ;;
       esac
       zsh "$ROOT/tools/samples.zsh" $mode \
         | python3 "$ROOT/tools/ansi2svg.py" --theme $theme --title "$title" \
@@ -446,6 +447,27 @@ if (( $+commands[python3] )); then
       fi
     done
   done
+
+  # The presets table is shipped as a PNG too — SVG text can't show Private Use
+  # Area glyphs to a reader without a Nerd Font. Freshness of the PNG can't be
+  # diffed (rasterizers differ), so just insist it exists and isn't empty.
+  for theme in dark light; do
+    if [[ -s $ROOT/assets/presets-$theme.png ]]; then
+      print -- "  ok   assets/presets-$theme.png exists"
+    else
+      print -- "  FAIL assets/presets-$theme.png missing — tools/svg2png.sh assets/presets-$theme.svg"
+      FAILED=1
+    fi
+  done
+
+  # Emoji are two cells wide but one character. The converter measures display
+  # width, not length: otherwise the presets table's width would be short and
+  # its right-hand column would be clipped.
+  out=$(python3 -c "
+import sys; sys.path.insert(0, '$ROOT/tools')
+from ansi2svg import cell_width as w
+print(w('*'), w('\u2295'), w('\U0001f500'), w('a\U0001f7e2'), w('\u2705\ufe0f'))")
+  check "cell width: ascii, geometric, emoji, mixed, +VS16" '1 1 2 3 2' "$out"
 
   # Colors must survive the ANSI -> SVG conversion, not just be present.
   out=$(zsh "$ROOT/tools/samples.zsh" prompt | python3 "$ROOT/tools/ansi2svg.py" --theme dark)

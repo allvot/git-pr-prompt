@@ -1,4 +1,11 @@
-# Gauge
+```
+ ▗▄▄▖ ▗▄▖ ▗▖ ▗▖ ▗▄▄▖▗▄▄▄▖
+▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌
+▐▌▝▜▌▐▛▀▜▌▐▌ ▐▌▐▌▝▜▌▐▛▀▀▘
+▝▚▄▞▘▐▌ ▐▌▝▚▄▞▘▝▚▄▞▘▐▙▄▄▖
+```
+
+# GAUGE
 
 *An instrument panel for your shell — read the repo and its pull request without
 looking, like glancing at a dial.*
@@ -30,9 +37,9 @@ Two deliberate omissions keep the line to what you can't already see:
   `you@host` over SSH and in red as root — the two cases where it matters.
   `GAUGE_SHOW_USER=1` to always show it, `0` never.
 
-With a Nerd Font installed you get GitHub's real Octicon glyphs instead —
- open,  draft,  merged,  closed — single-width characters, not emoji.
-Detection is automatic; see [Symbols](#symbols).
+With a Nerd Font installed you get GitHub's real Octicon glyphs instead of the
+geometric ones — single-width characters, not emoji. Detection is automatic; see
+[Symbols](#symbols).
 
 ## Symbols
 
@@ -48,15 +55,18 @@ The default is **`GAUGE_SYMBOL_SET=auto`**: real GitHub icon glyphs if your
 terminal has a Nerd Font, and the geometric set if it doesn't — so it looks
 right out of the box either way, with no tofu boxes.
 
+Every symbol in every preset. This one is a PNG rather than an SVG on purpose:
+the `nerdfont` glyphs live in the Unicode Private Use Area, so as *text* they
+would only render for readers who already have a Nerd Font — here the shapes are
+baked in, so you can see what you would be choosing.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/presets-dark.png">
+  <img alt="All four presets side by side: nerdfont Octicons, minimal geometry, emoji, and GitHub-colored circles, for each of the 14 symbols" src="assets/presets-light.png">
+</picture>
+
 | | `nerdfont` | `minimal` (fallback) | `emoji` | `github` |
 |---|---|---|---|---|
-| PR open |  | `⊙` | 🔀 | 🟢 |
-| draft |  | `◌` | 🚧 | ⚪ |
-| merged |  | `⊕` | 🎉 | 🟣 |
-| closed unmerged |  | `⊘` | 🚫 | 🔴 |
-| approved |  | `✓` | ✅ | ✅ |
-| changes requested |  | `✗` | ❌ | ❌ |
-| awaiting review |  | `·` | 👀 | 👀 |
 | **needs** | a Nerd Font | nothing | emoji font | emoji font |
 | **width** | 1 cell | 1 cell | 2 cells | 2 cells |
 
@@ -79,8 +89,9 @@ Run **`zsh tools/preview.zsh`** to see all four rendered in your own terminal
 and font, then pick with `GAUGE_SYMBOL_SET=nerdfont` (or `auto` to keep the
 detection).
 
-`nerdfont` also restyles the local flags ( modified,  staged,  untracked,
- ahead,  behind,  stashed). The other presets share these:
+`nerdfont` restyles the local flags too — a pencil for modified, a plus for
+staged, and so on, all visible in the image above. Every preset shares these
+meanings:
 
 | Symbol | Color | Meaning |
 |--------|-------|---------|
@@ -351,11 +362,22 @@ for theme in dark light; do
     --title 'gauge: path, branch, working-tree flags, PR state' > assets/prompt-$theme.svg
   zsh tools/samples.zsh states | python3 tools/ansi2svg.py --theme $theme \
     --title 'gauge: every pull request state' > assets/states-$theme.svg
+  zsh tools/samples.zsh presets | python3 tools/ansi2svg.py --theme $theme \
+    --title 'Every symbol in every preset: nerdfont, minimal, emoji, github' > assets/presets-$theme.svg
+  tools/svg2png.sh assets/presets-$theme.svg    # needs Chrome + a Nerd Font
 done
 ```
 
-The test suite regenerates them into a temp file and diffs, so a stale image
-fails the build rather than quietly misleading readers.
+The test suite regenerates every SVG into a temp file and diffs, so a stale
+image fails the build rather than quietly misleading readers.
+
+The presets table ships as a **PNG** as well, and it's the one the README shows.
+Nerd Font glyphs live in the Private Use Area, so as SVG *text* they'd render
+only for readers who already have such a font installed — precisely the people
+who don't need the picture. `tools/svg2png.sh` rasterizes through headless
+Chrome on a machine that has the font, which bakes the shapes in for everyone
+and picks up color emoji at the same time. Its SVG stays committed as the
+diffable source the test checks.
 
 ## License
 

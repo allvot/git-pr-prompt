@@ -43,6 +43,36 @@ CELL_W = 0.60          # advance width of a monospace cell, in em
 LINE_H = 1.45          # line height, in em
 PAD = 12               # px padding inside the rounded rect
 
+# Codepoints that occupy two terminal cells, and zero-width joiners/selectors.
+# Only as complete as this prompt needs: the CJK blocks plus the emoji ranges
+# the presets draw from. Must agree with zsh's ${(m)#str}, which is what pads
+# the columns in the text this reads.
+WIDE = [
+    (0x1100, 0x115F), (0x2329, 0x232A), (0x231A, 0x231B), (0x23E9, 0x23F3),
+    (0x25FD, 0x25FE), (0x2614, 0x2615), (0x2648, 0x2653), (0x267F, 0x267F),
+    (0x2693, 0x2693), (0x26A1, 0x26A1), (0x26AA, 0x26AB), (0x26BD, 0x26BE),
+    (0x26C4, 0x26C5), (0x2705, 0x2705), (0x270A, 0x270B), (0x2728, 0x2728),
+    (0x274C, 0x274C), (0x274E, 0x274E), (0x2753, 0x2755), (0x2757, 0x2757),
+    (0x2795, 0x2797), (0x27B0, 0x27B0), (0x27BF, 0x27BF),
+    (0x2E80, 0x303E), (0x3041, 0x33FF), (0x3400, 0x4DBF), (0x4E00, 0x9FFF),
+    (0xA000, 0xA4CF), (0xAC00, 0xD7A3), (0xF900, 0xFAFF), (0xFE30, 0xFE6F),
+    (0xFF00, 0xFF60), (0xFFE0, 0xFFE6),
+    (0x1F300, 0x1F64F), (0x1F680, 0x1F6FF), (0x1F7E0, 0x1F7EB),
+    (0x1F900, 0x1F9FF), (0x1FA70, 0x1FAFF), (0x20000, 0x3FFFD),
+]
+ZERO = [(0x200B, 0x200F), (0x2060, 0x2064), (0xFE00, 0xFE0F), (0x0300, 0x036F)]
+
+
+def cell_width(text):
+    """Terminal cells `text` occupies — not len(), which emoji break."""
+    total = 0
+    for ch in text:
+        cp = ord(ch)
+        if any(lo <= cp <= hi for lo, hi in ZERO):
+            continue
+        total += 2 if any(lo <= cp <= hi for lo, hi in WIDE) else 1
+    return total
+
 
 def xterm256(n, theme):
     """Hex for a 256-color index: 0-15 palette, 16-231 cube, 232-255 gray."""
@@ -100,7 +130,7 @@ def render(text, theme_name, font_size, title):
     # Width from the widest line, measured with the escapes removed.
     # +1 cell of slack: the final glyph may be wider than a cell if it comes
     # from a fallback font.
-    cols = max((len(SGR.sub("", l)) for l in raw), default = 0) + 1
+    cols = max((cell_width(SGR.sub("", l)) for l in raw), default = 0) + 1
     width = round(cols * CELL_W * font_size) + PAD * 2
     height = round(len(lines) * LINE_H * font_size) + PAD * 2
 
@@ -127,7 +157,7 @@ def render(text, theme_name, font_size, title):
             fill = ' fill="%s"' % color if color else ""
             out.append('<tspan x="%.1f" y="%d"%s>%s</tspan>'
                        % (x, y, fill, escape(chunk)))
-            col += len(chunk)
+            col += cell_width(chunk)
 
     out += ["</text>", "</svg>", ""]
     return "\n".join(out)

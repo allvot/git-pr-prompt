@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="663" height="350" viewBox="0 0 663 350" role="img" aria-label="Every symbol in every preset: nerdfont, minimal, emoji, github">
+<rect width="663" height="350" rx="8" fill="#ffffff"/>
+<text xml:space="preserve" font-family="'JetBrainsMono Nerd Font Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15px" fill="#24292f">
+<tspan x="12.0" y="33">                    nerdfont    minimal     emoji       github      </tspan>
+<tspan x="12.0" y="54">  PR open                      ⊙           🔀          🟢            </tspan>
+<tspan x="12.0" y="76">  draft                        ◌           🚧          ⚪          </tspan>
+<tspan x="12.0" y="98">  merged                       ⊕           🎉          🟣            </tspan>
+<tspan x="12.0" y="120">  closed                       ⊘           🚫          🔴          </tspan>
+<tspan x="12.0" y="141">  approved                     ✓           ✅          ✅          </tspan>
+<tspan x="12.0" y="163">  changes req                  ✗           ❌          ❌          </tspan>
+<tspan x="12.0" y="185">  awaiting review              ·           👀          👀          </tspan>
+<tspan x="12.0" y="207">  unstaged                     *           *           *           </tspan>
+<tspan x="12.0" y="228">  staged                       +           +           +           </tspan>
+<tspan x="12.0" y="250">  untracked                    ?           ?           ?           </tspan>
+<tspan x="12.0" y="272">  ahead                        ↑           ↑           ↑           </tspan>
+<tspan x="12.0" y="294">  behind                       ↓           ↓           ↓           </tspan>
+<tspan x="12.0" y="315">  stashed                      ≡           ≡           ≡           </tspan>
+<tspan x="12.0" y="337">  branch                                                           </tspan>
+</text>
+</svg>
