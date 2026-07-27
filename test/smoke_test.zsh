@@ -24,6 +24,7 @@ trap 'rm -rf "$tmp"' EXIT
 
 ZGP_SYMBOL_SET=minimal                 # deterministic symbols for assertions
 ZGP_PR_ENABLED=0                       # keep the network out of the test
+ZGP_TITLE=0                            # don't spray OSC escapes over the output
 ZGP_PR_CACHE_DIR="$tmp/cache"
 source "$ROOT/git-pr-prompt.plugin.zsh"
 
@@ -83,6 +84,60 @@ check "closed"          '⊘' "$(_zgp_pr_render CLOSED false '')"
 [[ $(_zgp_pr_render OPEN true REVIEW_REQUIRED) == *'·'* ]] &&
   { print -- "  FAIL draft should not show the review-pending icon"; FAILED=1 } ||
   print -- "  ok   draft hides review-pending icon"
+
+print -- "\nterminal title carries the repo context"
+# ⌘K in Tabby and Ghostty keeps only the cursor row, so a two-line prompt loses
+# its status line. The title survives every kind of clear.
+title_in() {   # title_in <dir> [env assignments...]
+  local dir=$1; shift
+  zsh -c "cd '$dir'
+    $* ZGP_PR_ENABLED=0 ZGP_SYMBOL_SET=minimal
+    source '$ROOT/git-pr-prompt.plugin.zsh'
+    _zgp_precmd" | cat -v
+}
+
+out=$(title_in "$tmp/repo")
+check "sets an OSC 0 title"      '^[]0;'          "$out"
+check "names the repo"           'repo'           "$out"
+check "names the branch"         'feature/thing'  "$out"
+check "terminated with BEL"      '^G'             "$out"
+
+out=$(title_in "$tmp")
+check "outside a repo, shows the path" '/'  "$out"
+[[ $out == *'feature/thing'* ]] &&
+  { print -- "  FAIL leaked a branch name outside the repo"; FAILED=1 } ||
+  print -- "  ok   no branch name outside a repo"
+
+out=$(title_in "$tmp/repo" "ZGP_TITLE=0")
+[[ $out == *']0;'* ]] &&
+  { print -- "  FAIL ZGP_TITLE=0 still wrote a title"; FAILED=1 } ||
+  print -- "  ok   ZGP_TITLE=0 writes nothing"
+
+print -- "\nclear-screen redraws the whole prompt"
+# zsh's own clear-screen reprints every prompt line; ⌘K can't. Binding ^L to a
+# widget that ALSO drops scrollback makes a shell-side ⌘K equivalent.
+bound() {   # bound [env assignments...] -> what ^L runs
+  zsh -f -ic "$* ZGP_PR_ENABLED=0 ZGP_TITLE=0
+    source '$ROOT/git-pr-prompt.plugin.zsh'
+    bindkey '^L'" 2>&1
+}
+
+check "^L runs the widget"      'zgp-clear-screen' "$(bound)"
+check "opt out leaves ^L alone" 'clear-screen'     "$(bound ZGP_BIND_CLEAR=0)"
+out=$(bound ZGP_BIND_CLEAR=0)
+[[ $out == *'zgp-clear-screen'* ]] &&
+  { print -- "  FAIL ZGP_BIND_CLEAR=0 still rebound ^L"; FAILED=1 } ||
+  print -- "  ok   ZGP_BIND_CLEAR=0 does not rebind"
+
+# Never stomp a binding the user set themselves.
+out=$(zsh -f -ic "ZGP_PR_ENABLED=0 ZGP_TITLE=0
+  zle -N my-clear() { }
+  bindkey '^L' undefined-key
+  source '$ROOT/git-pr-prompt.plugin.zsh'
+  bindkey '^L'" 2>&1)
+[[ $out == *'zgp-clear-screen'* ]] &&
+  { print -- "  FAIL overwrote a user's own ^L binding"; FAILED=1 } ||
+  print -- "  ok   leaves a customised ^L binding alone"
 
 print -- "\nuser@host only when it tells you something"
 # Your own name on your own laptop is noise. It becomes information over SSH

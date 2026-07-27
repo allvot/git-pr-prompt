@@ -19,7 +19,9 @@ typeset -g ZGP_ROOT="${0:A:h}"
 : ${ZGP_ASYNC_REDRAW:=1}                                       # redraw prompt when PR data lands
 : ${ZGP_SET_PROMPT:=1}
 : ${ZGP_PROMPT_NEWLINE:=1}
-: ${ZGP_SHOW_USER:=auto}                   # auto (SSH or root only) | 1 | 0                                         # install our PROMPT
+: ${ZGP_SHOW_USER:=auto}                   # auto (SSH or root only) | 1 | 0
+: ${ZGP_TITLE:=1}                          # set the terminal title to repo:branch
+: ${ZGP_BIND_CLEAR:=1}                     # ^L clears scrollback and redraws in full                                         # install our PROMPT
 : ${ZGP_SHOW_STASH:=1}
 : ${ZGP_SHOW_UNTRACKED:=1}
 : ${ZGP_SHOW_REVIEW_PENDING:=1}                                # 👀 while awaiting review
@@ -75,6 +77,7 @@ source "$ZGP_ROOT/presets/minimal.zsh"
 
 source "$ZGP_ROOT/lib/render.zsh"
 source "$ZGP_ROOT/lib/git-status.zsh"
+source "$ZGP_ROOT/lib/title.zsh"
 source "$ZGP_ROOT/lib/pr-status.zsh"
 source "$ZGP_ROOT/lib/prompt.zsh"
 source "$ZGP_ROOT/lib/legend.zsh"

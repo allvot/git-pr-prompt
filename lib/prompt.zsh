@@ -22,6 +22,18 @@ _zgp_git_segment() {
 _zgp_precmd() {
   vcs_info
   ZGP_GIT_INFO=$(_zgp_git_segment "$vcs_info_msg_0_")
+  _zgp_title "$vcs_info_msg_0_"
+}
+
+# Clear the screen, drop the scrollback, and redraw the WHOLE prompt.
+#
+# The terminal's own clear (⌘K) can't do that last part: it keeps the cursor's
+# row and knows nothing about the status line above it. zsh's clear-screen
+# reprints every prompt line, so doing it shell-side keeps the context visible —
+# and the \e[3J makes it discard scrollback like ⌘K does.
+zgp-clear-screen() {
+  print -n -- $'\e[3J'
+  zle clear-screen
 }
 
 # Redraw the prompt when a background PR query finishes.
@@ -63,6 +75,13 @@ _zgp_setup() {
   zstyle ':vcs_info:git:*' actionformats '%b|%a'
 
   add-zsh-hook precmd _zgp_precmd
+
+  # Take over ^L only while it still runs the stock widget — if it's bound to
+  # anything else, that's the user's choice.
+  if (( ZGP_BIND_CLEAR )) && [[ $(bindkey '^L') == *' clear-screen' ]]; then
+    zle -N zgp-clear-screen
+    bindkey '^L' zgp-clear-screen
+  fi
 
   # Don't stomp on an existing SIGUSR1 handler.
   if (( ZGP_ASYNC_REDRAW )) && ! (( $+functions[TRAPUSR1] )); then

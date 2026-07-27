@@ -127,6 +127,8 @@ Set any of these **before** sourcing the plugin. Defaults shown.
 | `ZGP_SET_PROMPT` | `1` | Set `0` to keep your own `PROMPT` (see below) |
 | `ZGP_PROMPT_NEWLINE` | `1` | Cursor on its own line below the status |
 | `ZGP_SHOW_USER` | `auto` | `auto` = over SSH or as root only; `1` always, `0` never |
+| `ZGP_TITLE` | `1` | Set the terminal/tab title to `repo:branch` |
+| `ZGP_BIND_CLEAR` | `1` | Bind `^L` to clear scrollback and redraw in full |
 | `ZGP_SHOW_STASH` | `1` | Show the `≡n` stash counter |
 | `ZGP_SHOW_UNTRACKED` | `1` | Show the `?` untracked marker |
 | `ZGP_SKIP_BRANCHES` | `(main master production)` | Branches never queried for a PR |
@@ -155,6 +157,33 @@ PROMPT='%F{green}%n@%m%f %F{blue}%~%f${ZGP_GIT_INFO}
 ```
 
 `setopt prompt_subst` is required (the plugin sets it).
+
+## Clearing the screen
+
+A terminal-level clear — ⌘K in Tabby and Ghostty — wipes the buffer and keeps
+only the row the cursor is on. It knows nothing about the status line above it,
+so with a two-line prompt you lose the path, branch and PR state.
+
+Two defenses, both on by default:
+
+- **The title.** `ZGP_TITLE=1` puts `repo:branch` in the window and tab title,
+  where no clear can touch it. Works in every terminal and costs nothing
+  visually.
+- **`^L`.** The plugin binds it to `zgp-clear-screen`, which drops the scrollback
+  (`\e[3J`, the part ⌘K does that plain `^L` doesn't) and then redraws *every*
+  prompt line. Same result as ⌘K, context intact. If your `^L` is already bound
+  to something other than the stock widget, the plugin leaves it alone.
+
+To get that from ⌘K itself, remap the key to send `^L`:
+
+```
+# ~/.config/ghostty/config
+keybind = cmd+k=text:\x0c
+```
+
+Tabby has no send-text action, so ⌘K there can only be a buffer clear — either
+lean on the title, or free ⌘K in Settings → Hotkeys (it's bound to `clear`) and
+use `^L`.
 
 ## Commands
 
