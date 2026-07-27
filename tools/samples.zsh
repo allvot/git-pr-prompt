@@ -36,6 +36,21 @@ _sample_line() {
   print -P -- "$line"
 }
 
+# _sample_user_line <label> <user-text> <color-key> — a status line preceded by
+# the user segment. The real segment renders %n/%m, which would put this machine's
+# names in the image, so the text is passed in and only the coloring is shared.
+_sample_user_line() {
+  local line
+  line="$(printf '  %-18s' "$1")"
+  # Pad to a fixed user column so the paths line up and the empty first row
+  # reads as "nothing here" rather than as a different layout.
+  [[ -n $2 ]] && line+="$(_gauge_color $3 "$2")"
+  line+="$(printf '%*s' $(( 12 - ${#2} )) '')"
+  line+="$(_gauge_color path '~/dev/acme')"
+  line+="$(_gauge_group_join 'feature/login' '' '')"
+  print -P -- "$line"
+}
+
 _sample_cursor() {   # the ❯ line, with an optional command after it
   print -P -- "$(_gauge_color prompt_char "${GAUGE_SYMBOLS[prompt_char]}") ${1-}"
 }
@@ -72,6 +87,14 @@ case ${1:-prompt} in
       | grep -v 'Switch with GAUGE_SYMBOL_SET' \
       | awk 'NF { seen = 1 } seen { l[++n] = $0; if (NF) last = n }
              END { for (i = 1; i <= last; i++) print l[i] }'
+    ;;
+
+  user)     # the optional user segment, in each case that shows it.
+            # Mock names, not %n/%m: this image ships in a public README.
+    _sample_user_line 'auto (local)'       ''           user
+    _sample_user_line 'auto (over SSH)'    'dev@laptop' user
+    _sample_user_line 'auto (as root)'     'root'       user_root
+    _sample_user_line 'GAUGE_SHOW_USER=1'  'dev'        user
     ;;
 
   themes)   # the same line in every theme — one subshell each, because a theme

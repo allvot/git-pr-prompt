@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="555" height="111" viewBox="0 0 555 111" role="img" aria-label="GAUGE_SHOW_USER: hidden locally, user@host over SSH, red as root">
+<rect width="555" height="111" rx="8" fill="#ffffff"/>
+<text xml:space="preserve" font-family="'JetBrainsMono Nerd Font Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15px" fill="#24292f">
+<tspan x="12.0" y="33">  auto (local)                  </tspan>
+<tspan x="300.0" y="33" fill="#0969da">~/dev/acme</tspan>
+<tspan x="390.0" y="33"> </tspan>
+<tspan x="399.0" y="33" fill="#6c6c6c">│</tspan>
+<tspan x="408.0" y="33"> </tspan>
+<tspan x="417.0" y="33" fill="#8250df">feature/login</tspan>
+<tspan x="12.0" y="54">  auto (over SSH)   </tspan>
+<tspan x="192.0" y="54" fill="#1a7f37">dev@laptop</tspan>
+<tspan x="282.0" y="54">  </tspan>
+<tspan x="300.0" y="54" fill="#0969da">~/dev/acme</tspan>
+<tspan x="390.0" y="54"> </tspan>
+<tspan x="399.0" y="54" fill="#6c6c6c">│</tspan>
+<tspan x="408.0" y="54"> </tspan>
+<tspan x="417.0" y="54" fill="#8250df">feature/login</tspan>
+<tspan x="12.0" y="76">  auto (as root)    </tspan>
+<tspan x="192.0" y="76" fill="#cf222e">root</tspan>
+<tspan x="228.0" y="76">        </tspan>
+<tspan x="300.0" y="76" fill="#0969da">~/dev/acme</tspan>
+<tspan x="390.0" y="76"> </tspan>
+<tspan x="399.0" y="76" fill="#6c6c6c">│</tspan>
+<tspan x="408.0" y="76"> </tspan>
+<tspan x="417.0" y="76" fill="#8250df">feature/login</tspan>
+<tspan x="12.0" y="98">  GAUGE_SHOW_USER=1 </tspan>
+<tspan x="192.0" y="98" fill="#1a7f37">dev</tspan>
+<tspan x="219.0" y="98">         </tspan>
+<tspan x="300.0" y="98" fill="#0969da">~/dev/acme</tspan>
+<tspan x="390.0" y="98"> </tspan>
+<tspan x="399.0" y="98" fill="#6c6c6c">│</tspan>
+<tspan x="408.0" y="98"> </tspan>
+<tspan x="417.0" y="98" fill="#8250df">feature/login</tspan>
+</text>
+</svg>

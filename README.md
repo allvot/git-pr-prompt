@@ -37,6 +37,14 @@ Two deliberate omissions keep the line to what you can't already see:
   `you@host` over SSH and in red as root — the two cases where it matters.
   `GAUGE_SHOW_USER=1` to always show it, `0` never.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/user-dark.svg">
+  <img alt="GAUGE_SHOW_USER: nothing locally, dev@laptop over SSH, root in red, dev when forced on" src="assets/user-light.svg">
+</picture>
+
+The name sits ahead of the path and keeps its own color, red as root so you can't
+miss it. Every row there is the same prompt — only that segment comes and goes.
+
 With a Nerd Font installed you get GitHub's real Octicon glyphs instead of the
 geometric ones — single-width characters, not emoji. Detection is automatic; see
 [Symbols](#symbols).
@@ -461,6 +469,8 @@ for theme in dark light; do
     --title 'Every symbol in every preset: nerdfont, minimal, emoji, github' > assets/presets-$theme.svg
   zsh tools/samples.zsh themes | python3 tools/ansi2svg.py --theme $theme \
     --title 'Every theme: default, nord, gruvbox, dracula, solarized, mono' > assets/themes-$theme.svg
+  zsh tools/samples.zsh user | python3 tools/ansi2svg.py --theme $theme \
+    --title 'GAUGE_SHOW_USER: hidden locally, user@host over SSH, red as root' > assets/user-$theme.svg
   tools/svg2png.sh assets/presets-$theme.svg    # needs Chrome + a Nerd Font
 done
 ```

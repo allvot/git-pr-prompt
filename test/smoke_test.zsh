@@ -627,13 +627,14 @@ print -- "\nREADME images match the code"
 # or a symbol changes and the images aren't regenerated, the README lies — so
 # regenerate into a temp file and diff.
 if (( $+commands[python3] )); then
-  for mode in prompt states presets themes; do
+  for mode in prompt states presets themes user; do
     for theme in dark light; do
       case $mode in
         prompt)  title="gauge: path, branch, working-tree flags, PR state" ;;
         states)  title="gauge: every pull request state" ;;
         presets) title="Every symbol in every preset: nerdfont, minimal, emoji, github" ;;
         themes)  title="Every theme: default, nord, gruvbox, dracula, solarized, mono" ;;
+        user)    title="GAUGE_SHOW_USER: hidden locally, user@host over SSH, red as root" ;;
       esac
       zsh "$ROOT/tools/samples.zsh" $mode \
         | python3 "$ROOT/tools/ansi2svg.py" --theme $theme --title "$title" \
@@ -668,6 +669,23 @@ import sys; sys.path.insert(0, '$ROOT/tools')
 from ansi2svg import cell_width as w
 print(w('*'), w('\u2295'), w('\U0001f500'), w('a\U0001f7e2'), w('\u2705\ufe0f'))")
   check "cell width: ascii, geometric, emoji, mixed, +VS16" '1 1 2 3 2' "$out"
+
+  # The user segment is opt-in, so it needs its own image: the hero shot shows
+  # the default, where the name is hidden.
+  out=$(zsh "$ROOT/tools/samples.zsh" user)
+  check "shows the SSH form"      'dev@laptop' "$out"
+  check "shows the local form"    'GAUGE_SHOW_USER=1' "$out"
+  check "shows the root case"     'root' "$out"
+  check "root is painted danger"  $'\e[31mroot' "$out"
+  # Mock names only — %n/%m would bake this machine's user and host into an
+  # image that ships in a public README.
+  for leak in "$USER" "${HOST%%.*}"; do
+    if [[ -n $leak && $out == *$leak* ]]; then
+      print -- "  FAIL user sample leaked a real name ($leak)"; FAILED=1
+    else
+      print -- "  ok   no real name in the user sample ($leak)"
+    fi
+  done
 
   # The gallery is the only image with hex themes in it, so it's the only one
   # whose colors arrive as truecolor SGR (38;2;r;g;b) rather than palette indices.
