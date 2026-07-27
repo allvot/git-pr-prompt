@@ -84,6 +84,36 @@ check "closed"          '⊘' "$(_zgp_pr_render CLOSED false '')"
   { print -- "  FAIL draft should not show the review-pending icon"; FAILED=1 } ||
   print -- "  ok   draft hides review-pending icon"
 
+print -- "\ntwo-line prompt"
+# The cursor should sit at a fixed column on its own line, so long paths and
+# branch names never push the input right or wrap it unpredictably.
+out=$(zsh -c "ZGP_PR_ENABLED=0 ZGP_SYMBOL_SET=minimal
+  source '$ROOT/git-pr-prompt.plugin.zsh'
+  print -r -- \"\$PROMPT\"")
+lines=( ${(f)out} )
+check "default is two lines"          '2'          "$#lines"
+check "git segment on the first line" 'ZGP_GIT_INFO' "${lines[1]}"
+check "prompt char starts line two"   '❯'          "${lines[2]}"
+[[ ${lines[1]} == *' ' ]] &&
+  { print -- "  FAIL trailing space before the newline"; FAILED=1 } ||
+  print -- "  ok   no trailing space before the newline"
+# Line two carries the prompt char and nothing else — no path, no git segment.
+# (Colors are still raw %F{...} escapes here; PROMPT isn't expanded by print.)
+[[ ${lines[2]} == *'❯'*' ' && ${lines[2]} != *('%~'|ZGP_GIT_INFO)* ]] &&
+  print -- "  ok   line two is just the prompt char" ||
+  { print -- "  FAIL line two has more than the prompt char: ${lines[2]}"; FAILED=1 }
+
+out=$(zsh -c "ZGP_PR_ENABLED=0 ZGP_SYMBOL_SET=minimal ZGP_PROMPT_NEWLINE=0
+  source '$ROOT/git-pr-prompt.plugin.zsh'
+  print -r -- \"\$PROMPT\"")
+lines=( ${(f)out} )
+check "ZGP_PROMPT_NEWLINE=0 is one line" '1' "$#lines"
+check "still has the git segment"        'ZGP_GIT_INFO' "$out"
+check "still has the prompt char"        '❯'            "$out"
+[[ $out == *'ZGP_GIT_INFO}'* && $out != *'ZGP_GIT_INFO} '* ]] &&
+  { print -- "  FAIL one-line form lost the space after the git segment"; FAILED=1 } ||
+  print -- "  ok   one-line form keeps its separating space"
+
 print -- "\nauto preset resolution"
 out=$(zsh -c "ZGP_HAS_NERDFONT=1 ZGP_PR_ENABLED=0
   source '$ROOT/git-pr-prompt.plugin.zsh'

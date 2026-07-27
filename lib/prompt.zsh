@@ -48,7 +48,17 @@ _zgp_setup() {
 
   if (( ZGP_SET_PROMPT )); then
     PROMPT="$(_zgp_color user '%n') $(_zgp_color path '%~')"
-    PROMPT+='${ZGP_GIT_INFO} '
+    PROMPT+='${ZGP_GIT_INFO}'
+
+    # Status on one line, the cursor on the next. Keeps the input at a fixed
+    # column no matter how deep the path or how long the branch name, so
+    # commands don't wrap in unpredictable places.
+    if (( ZGP_PROMPT_NEWLINE )); then
+      PROMPT+=$'\n'
+    else
+      PROMPT+=' '
+    fi
+
     PROMPT+="$(_zgp_color prompt_char "${ZGP_SYMBOLS[prompt_char]}") "
   fi
 }
