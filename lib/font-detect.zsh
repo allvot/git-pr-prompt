@@ -1,0 +1,110 @@
+# Nerd Font detection, so `ZGP_SYMBOL_SET=auto` can use real Octicon glyphs
+# ( U+F407 and friends) where they'll render, and fall back to the geometric
+# set (⊙ ◌ ⊕ ⊘) where they'd show up as tofu boxes.
+#
+# Detection is a best-effort look at installed fonts and terminal config. It
+# runs ONCE and the answer is cached on disk — the prompt never pays for it.
+# When in doubt it answers "no", because a wrong yes means unreadable boxes
+# while a wrong no just means plainer symbols.
+
+: ${ZGP_FONT_CACHE:="${XDG_CACHE_HOME:-$HOME/.cache}/git-pr-prompt/font"}
+
+# Font family names that ship Nerd Font glyphs.
+_zgp_nerdfont_pattern='(nerd[ _-]?font|nerdfont| nf$|nf-|powerline|hack[ _-]?nf|jetbrainsmono nf|meslolgs|sourcecodepro nf|firacode nf|caskaydia)'
+
+_zgp_font_probe() {
+  local -a hits
+  local out
+
+  # 1. Explicit opt-in / opt-out always wins.
+  [[ -n ${ZGP_HAS_NERDFONT-} ]] && { print -r -- "$ZGP_HAS_NERDFONT"; return }
+
+  # 2. Installed font files (strongest portable signal).
+  if [[ $OSTYPE == darwin* ]]; then
+    hits=( ${(f)"$(ls ~/Library/Fonts /Library/Fonts /System/Library/Fonts 2>/dev/null)"} )
+    if (( ${#${(M)hits:#(#i)*nerd*}} || ${#${(M)hits:#(#i)*powerline*}} )); then
+      print -r -- 1; return
+    fi
+  fi
+  if (( $+commands[fc-list] )); then
+    out=$(fc-list 2>/dev/null | tr 'A-Z' 'a-z')
+    [[ $out =~ nerd || $out =~ powerline ]] && { print -r -- 1; return }
+  fi
+
+  # 3. Terminal font configuration, per emulator.
+  local -a configs=(
+    "${XDG_CONFIG_HOME:-$HOME/.config}/kitty/kitty.conf"
+    "${XDG_CONFIG_HOME:-$HOME/.config}/alacritty/alacritty.toml"
+    "${XDG_CONFIG_HOME:-$HOME/.config}/alacritty/alacritty.yml"
+    "${XDG_CONFIG_HOME:-$HOME/.config}/wezterm/wezterm.lua"
+    "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config"
+    "$HOME/.wezterm.lua"
+    "$HOME/Library/Application Support/tabby/config.yaml"
+  )
+  local cfg
+  for cfg in $configs; do
+    [[ -r $cfg ]] || continue
+    out=$(tr 'A-Z' 'a-z' < "$cfg" 2>/dev/null)
+    [[ $out =~ $_zgp_nerdfont_pattern ]] && { print -r -- 1; return }
+  done
+
+  # 4. macOS terminals that keep their font in defaults(1).
+  if [[ $OSTYPE == darwin* ]] && (( $+commands[defaults] )); then
+    case $TERM_PROGRAM in
+      iTerm.app)
+        out=$(defaults read com.googlecode.iterm2 "New Bookmarks" 2>/dev/null | tr 'A-Z' 'a-z')
+        [[ $out =~ $_zgp_nerdfont_pattern ]] && { print -r -- 1; return }
+        ;;
+      Apple_Terminal)
+        out=$(defaults read com.apple.Terminal "Window Settings" 2>/dev/null | tr 'A-Z' 'a-z')
+        [[ $out =~ $_zgp_nerdfont_pattern ]] && { print -r -- 1; return }
+        ;;
+    esac
+  fi
+
+  print -r -- 0
+}
+
+# Cached answer: 1 = Nerd Font glyphs are safe to use, 0 = fall back.
+_zgp_has_nerdfont() {
+  if [[ -z ${ZGP_HAS_NERDFONT-} && -r $ZGP_FONT_CACHE ]]; then
+    ZGP_HAS_NERDFONT=$(<"$ZGP_FONT_CACHE")
+  fi
+
+  if [[ -z ${ZGP_HAS_NERDFONT-} ]]; then
+    ZGP_HAS_NERDFONT=$(_zgp_font_probe)
+    mkdir -p "${ZGP_FONT_CACHE:h}" 2>/dev/null &&
+      print -r -- "$ZGP_HAS_NERDFONT" > "$ZGP_FONT_CACHE" 2>/dev/null
+  fi
+
+  (( ZGP_HAS_NERDFONT ))
+}
+
+# Re-run detection (call after installing a font or switching terminal fonts).
+zgp-font-check() {
+  local force=""
+  [[ $1 == (--yes|--no) ]] && force=$1
+
+  case $force in
+    --yes|--no)
+      ZGP_HAS_NERDFONT=$([[ $force == --yes ]] && print 1 || print 0)
+      mkdir -p "${ZGP_FONT_CACHE:h}" 2>/dev/null &&
+        print -r -- "$ZGP_HAS_NERDFONT" > "$ZGP_FONT_CACHE"
+      ;;
+    *)
+      unset ZGP_HAS_NERDFONT
+      rm -f "$ZGP_FONT_CACHE" 2>/dev/null
+      ;;
+  esac
+
+  _zgp_has_nerdfont
+  local answer=$ZGP_HAS_NERDFONT
+
+  print -P -- "Nerd Font detected: %B$( (( answer )) && print yes || print no )%b  (cached in $ZGP_FONT_CACHE)"
+  print -P -- "These should look like GitHub's PR icons, not boxes:"
+  print -r -- "           "
+  print -P -- ""
+  print -P -- "If they ARE boxes: %F{cyan}zgp-font-check --no%f"
+  print -P -- "If they render fine but detection said no: %F{cyan}zgp-font-check --yes%f"
+  print -P -- "Then reload: %F{cyan}exec zsh%f"
+}

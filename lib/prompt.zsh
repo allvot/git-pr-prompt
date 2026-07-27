@@ -11,9 +11,9 @@ _zgp_git_segment() {
   flags=$(_zgp_local_status)
   pr=$(_zgp_pr_status "$branch")
 
-  out=" %F{${ZGP_COLORS[branch]}}(${branch}%f"
-  [[ -n $flags ]] && out+="%F{${ZGP_COLORS[flags]}} ${flags}%f"
-  out+="%F{${ZGP_COLORS[branch]}})%f"
+  out=" $(_zgp_color branch "(${ZGP_SYMBOLS[branch_prefix]}${branch}")"
+  [[ -n $flags ]] && out+=$(_zgp_color flags " ${flags}")
+  out+=$(_zgp_color branch ")")
   [[ -n $pr ]] && out+=" ${pr}"
 
   print -r -- "$out"
@@ -47,6 +47,8 @@ _zgp_setup() {
   fi
 
   if (( ZGP_SET_PROMPT )); then
-    PROMPT='%F{'${ZGP_COLORS[user]}'}%n%f %F{'${ZGP_COLORS[path]}'}%~%f${ZGP_GIT_INFO} %F{'${ZGP_COLORS[prompt_char]}'}❯%f '
+    PROMPT="$(_zgp_color user '%n') $(_zgp_color path '%~')"
+    PROMPT+='${ZGP_GIT_INFO} '
+    PROMPT+="$(_zgp_color prompt_char "${ZGP_SYMBOLS[prompt_char]}") "
   fi
 }

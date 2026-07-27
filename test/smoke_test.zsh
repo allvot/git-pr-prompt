@@ -22,6 +22,7 @@ check() {
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
+ZGP_SYMBOL_SET=minimal                 # deterministic symbols for assertions
 ZGP_PR_ENABLED=0                       # keep the network out of the test
 ZGP_PR_CACHE_DIR="$tmp/cache"
 source "$ROOT/git-pr-prompt.plugin.zsh"
@@ -69,13 +70,80 @@ _zgp_precmd
 check "segment is empty" '' "$ZGP_GIT_INFO"
 [[ -z $ZGP_GIT_INFO ]] || { print -- "  FAIL expected empty segment, got: $ZGP_GIT_INFO"; FAILED=1 }
 
-print -- "\nPR rendering (no network)"
-check "open + approved" '⊙' "$(_zgp_pr_render OPEN false APPROVED)"
-check "approved check"  '✓' "$(_zgp_pr_render OPEN false APPROVED)"
+print -- "\nPR rendering, geometric fallback (no network)"
+check "open"            '⊙' "$(_zgp_pr_render OPEN false '')"
+check "approved"        '✓' "$(_zgp_pr_render OPEN false APPROVED)"
+check "changes req"     '✗' "$(_zgp_pr_render OPEN false CHANGES_REQUESTED)"
+check "review pending"  '·' "$(_zgp_pr_render OPEN false REVIEW_REQUIRED)"
 check "draft"           '◌' "$(_zgp_pr_render OPEN true '')"
 check "merged"          '⊕' "$(_zgp_pr_render MERGED false '')"
 check "closed"          '⊘' "$(_zgp_pr_render CLOSED false '')"
-check "changes req"     '✗' "$(_zgp_pr_render OPEN false CHANGES_REQUESTED)"
+
+# REVIEW_REQUIRED is meaningless on a draft or a closed PR.
+[[ $(_zgp_pr_render OPEN true REVIEW_REQUIRED) == *'·'* ]] &&
+  { print -- "  FAIL draft should not show the review-pending icon"; FAILED=1 } ||
+  print -- "  ok   draft hides review-pending icon"
+
+print -- "\nauto preset resolution"
+out=$(zsh -c "ZGP_HAS_NERDFONT=1 ZGP_PR_ENABLED=0
+  source '$ROOT/git-pr-prompt.plugin.zsh'
+  c=\${ZGP_SYMBOLS[pr_open]}
+  print -r -- \"\$ZGP_ACTIVE_SYMBOL_SET \$(( [##16] #c ))\"")
+check "nerd font present -> nerdfont" 'nerdfont'  "$out"
+check "pr_open is Octicon U+F407"     'F407'      "${out:u}"
+
+out=$(zsh -c "ZGP_HAS_NERDFONT=0 ZGP_PR_ENABLED=0
+  source '$ROOT/git-pr-prompt.plugin.zsh'
+  print -r -- \"\$ZGP_ACTIVE_SYMBOL_SET \${ZGP_SYMBOLS[pr_open]}\"")
+check "no nerd font -> minimal"   'minimal' "$out"
+check "falls back to the ⊙ set"   '⊙'       "$out"
+
+print -- "\nemoji presets are not color-tinted"
+out=$(zsh -c "ZGP_SYMBOL_SET=emoji ZGP_PR_ENABLED=0
+  source '$ROOT/git-pr-prompt.plugin.zsh'
+  print -r -- \"\$(_zgp_pr_render OPEN false APPROVED)\"")
+check "emoji rendered" '🔀' "$out"
+[[ $out == *'%F'* ]] &&
+  { print -- "  FAIL emoji preset should not emit %F color codes"; FAILED=1 } ||
+  print -- "  ok   emits no %F color codes"
+
+print -- "\nevery preset defines every symbol key"
+for preset in emoji github nerdfont minimal; do
+  out=$(zsh -c "
+    ZGP_SYMBOL_SET=$preset ZGP_PR_ENABLED=0
+    source '$ROOT/git-pr-prompt.plugin.zsh'
+    missing=()
+    for k in dirty staged untracked ahead behind stash pr_open pr_draft \
+             pr_merged pr_closed review_approved review_changes review_pending \
+             prompt_char; do
+      [[ -n \${ZGP_SYMBOLS[\$k]-} ]] || missing+=\$k
+    done
+    for s in OPEN MERGED CLOSED; do
+      [[ -n \$(_zgp_pr_render \$s false '') ]] || missing+=\"render:\$s\"
+    done
+    print -r -- \"\${missing[*]}\"
+  ")
+  if [[ -z $out ]]; then
+    print -- "  ok   $preset"
+  else
+    print -- "  FAIL $preset missing: $out"
+    FAILED=1
+  fi
+done
+
+print -- "\nunknown preset falls back to minimal"
+out=$(zsh -c "ZGP_SYMBOL_SET=nope ZGP_PR_ENABLED=0
+  source '$ROOT/git-pr-prompt.plugin.zsh' 2>&1
+  print -r -- \"\${ZGP_SYMBOLS[pr_open]}\"")
+check "warns and uses minimal" '⊙' "$out"
+
+print -- "\nuser overrides beat the preset"
+out=$(zsh -c "typeset -A ZGP_SYMBOLS=(pr_open 'XX')
+  ZGP_SYMBOL_SET=minimal ZGP_PR_ENABLED=0
+  source '$ROOT/git-pr-prompt.plugin.zsh'
+  print -r -- \"\${ZGP_SYMBOLS[pr_open]}|\${ZGP_SYMBOLS[pr_merged]}\"")
+check "override applied"        'XX' "$out"
+check "rest of preset intact"   '⊕' "$out"
 
 print -- ""
 if (( FAILED )); then

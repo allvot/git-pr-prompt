@@ -28,18 +28,24 @@ _zgp_pr_render() {
   local state=$1 draft=$2 review=$3 out=""
 
   if [[ $draft == true ]]; then
-    out="%F{${ZGP_COLORS[pr_draft]}}${ZGP_SYMBOLS[pr_draft]}%f"
+    out=$(_zgp_color pr_draft "${ZGP_SYMBOLS[pr_draft]}")
   else
     case $state in
-      MERGED) out="%F{${ZGP_COLORS[pr_merged]}}${ZGP_SYMBOLS[pr_merged]}%f" ;;
-      CLOSED) out="%F{${ZGP_COLORS[pr_closed]}}${ZGP_SYMBOLS[pr_closed]}%f" ;;
-      OPEN)   out="%F{${ZGP_COLORS[pr_open]}}${ZGP_SYMBOLS[pr_open]}%f" ;;
+      MERGED) out=$(_zgp_color pr_merged "${ZGP_SYMBOLS[pr_merged]}") ;;
+      CLOSED) out=$(_zgp_color pr_closed "${ZGP_SYMBOLS[pr_closed]}") ;;
+      OPEN)   out=$(_zgp_color pr_open   "${ZGP_SYMBOLS[pr_open]}")   ;;
     esac
   fi
 
   case $review in
-    APPROVED)          out+=" %F{${ZGP_COLORS[review_approved]}}${ZGP_SYMBOLS[review_approved]}%f" ;;
-    CHANGES_REQUESTED) out+=" %F{${ZGP_COLORS[review_changes]}}${ZGP_SYMBOLS[review_changes]}%f" ;;
+    APPROVED)          out+=" $(_zgp_color review_approved "${ZGP_SYMBOLS[review_approved]}")" ;;
+    CHANGES_REQUESTED) out+=" $(_zgp_color review_changes  "${ZGP_SYMBOLS[review_changes]}")"  ;;
+    REVIEW_REQUIRED)
+      # Only meaningful while the PR is open and out of draft.
+      if (( ZGP_SHOW_REVIEW_PENDING )) && [[ $state == OPEN && $draft != true ]]; then
+        out+=" $(_zgp_color review_pending "${ZGP_SYMBOLS[review_pending]}")"
+      fi
+      ;;
   esac
 
   print -r -- "$out"

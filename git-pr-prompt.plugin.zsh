@@ -12,67 +12,66 @@ typeset -g ZGP_ROOT="${0:A:h}"
 
 # --- Options (only defaults; never clobber what the user already set) -------
 
-: ${ZGP_PR_ENABLED:=1}                                        # query gh at all
-: ${ZGP_PR_CACHE_TTL:=30}                                     # seconds
+: ${ZGP_SYMBOL_SET:=auto}                  # auto | nerdfont | minimal | emoji | github
+: ${ZGP_PR_ENABLED:=1}                                         # query gh at all
+: ${ZGP_PR_CACHE_TTL:=30}                                      # seconds
 : ${ZGP_PR_CACHE_DIR:="${TMPDIR:-/tmp}/git-pr-prompt-cache"}
-: ${ZGP_ASYNC_REDRAW:=1}                                      # redraw prompt when PR data lands
-: ${ZGP_SET_PROMPT:=1}                                        # install our PROMPT
+: ${ZGP_ASYNC_REDRAW:=1}                                       # redraw prompt when PR data lands
+: ${ZGP_SET_PROMPT:=1}                                         # install our PROMPT
 : ${ZGP_SHOW_STASH:=1}
 : ${ZGP_SHOW_UNTRACKED:=1}
+: ${ZGP_SHOW_REVIEW_PENDING:=1}                                # 👀 while awaiting review
 
 # Branches that never have a PR of their own.
 typeset -ga ZGP_SKIP_BRANCHES
 (( $#ZGP_SKIP_BRANCHES )) || ZGP_SKIP_BRANCHES=(main master production)
 
-# --- Symbols ---------------------------------------------------------------
+# --- Symbols and colors ----------------------------------------------------
+#
+# Precedence: whatever the user set  >  the selected preset  >  minimal preset.
+# So `typeset -A ZGP_SYMBOLS=(pr_open '●')` before sourcing overrides one key
+# and leaves the rest of the preset intact.
 
-typeset -gA ZGP_SYMBOLS
-() {
-  local -A defaults=(
-    dirty            '*'
-    staged           '+'
-    untracked        '?'
-    ahead            '↑'
-    behind           '↓'
-    stash            '≡'
-    pr_draft         '◌'
-    pr_open          '⊙'
-    pr_merged        '⊕'
-    pr_closed        '⊘'
-    review_approved  '✓'
-    review_changes   '✗'
-  )
-  local k
-  for k in ${(k)defaults}; do
-    [[ -n ${ZGP_SYMBOLS[$k]-} ]] || ZGP_SYMBOLS[$k]=${defaults[$k]}
+typeset -gA ZGP_SYMBOLS ZGP_COLORS
+
+# _zgp_fill <assoc-array-name> <key> <value> [<key> <value> ...]
+# Assigns each pair only if that key is currently unset or empty.
+_zgp_fill() {
+  local name=$1; shift
+  local k v
+  while (( $# >= 2 )); do
+    k=$1 v=$2; shift 2
+    [[ -n ${${(P)name}[$k]-} ]] || eval "${name}[\$k]=\$v"
   done
 }
 
-# --- Colors (zsh prompt color names or 256-color numbers) ------------------
+# `auto` means: real GitHub Octicon glyphs if this terminal has a Nerd Font,
+# otherwise the geometric set. Detection is cached on disk — see lib/font-detect.zsh
+# and the `zgp-font-check` command.
+source "$ZGP_ROOT/lib/font-detect.zsh"
 
-typeset -gA ZGP_COLORS
-() {
-  local -A defaults=(
-    user             green
-    path             blue
-    branch           magenta
-    flags            yellow
-    prompt_char      yellow
-    pr_draft         242
-    pr_open          green
-    pr_merged        magenta
-    pr_closed        red
-    review_approved  green
-    review_changes   red
-  )
-  local k
-  for k in ${(k)defaults}; do
-    [[ -n ${ZGP_COLORS[$k]-} ]] || ZGP_COLORS[$k]=${defaults[$k]}
-  done
-}
+typeset -g ZGP_ACTIVE_SYMBOL_SET=$ZGP_SYMBOL_SET
+if [[ $ZGP_ACTIVE_SYMBOL_SET == auto ]]; then
+  if _zgp_has_nerdfont; then
+    ZGP_ACTIVE_SYMBOL_SET=nerdfont
+  else
+    ZGP_ACTIVE_SYMBOL_SET=minimal
+  fi
+fi
+
+if [[ -r $ZGP_ROOT/presets/$ZGP_ACTIVE_SYMBOL_SET.zsh ]]; then
+  source "$ZGP_ROOT/presets/$ZGP_ACTIVE_SYMBOL_SET.zsh"
+else
+  print -u2 "git-pr-prompt: unknown ZGP_SYMBOL_SET '$ZGP_SYMBOL_SET' (using minimal)"
+  ZGP_ACTIVE_SYMBOL_SET=minimal
+fi
+
+# Backstop: minimal fills any key the chosen preset left undefined.
+source "$ZGP_ROOT/presets/minimal.zsh"
 
 # --- Load the pieces -------------------------------------------------------
 
+source "$ZGP_ROOT/lib/render.zsh"
 source "$ZGP_ROOT/lib/git-status.zsh"
 source "$ZGP_ROOT/lib/pr-status.zsh"
 source "$ZGP_ROOT/lib/prompt.zsh"
